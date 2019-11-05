@@ -1,0 +1,118 @@
+---
+# tasks file for lxd_base
+
+- name: ensure system is ubuntu
+  assert:
+    that:
+      - "'{{ ansible_distribution }}' == 'Ubuntu'"
+
+- apt_repository:
+    repo: deb http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse
+    state: present
+  become: True
+
+- name: Update the repository cache and update package "lxd" to latest version using default release xenial-backport
+  apt:
+    name: lxd
+    state: latest
+    default_release: xenial-backports
+    update_cache: yes
+  become: True
+
+#
+#- name: install LXD via snap
+#  snap:
+#    name: lxd
+#  become: True
+
+#- name: perform dist-upgrade
+#  apt: upgrade=dist update_cache=yes
+#  become: True
+
+
+- name: install dependencies
+  apt:
+    pkg:
+      - zfsutils-linux
+      - python
+      - python-pip
+      - jq
+    state: latest
+  become: True
+
+- pip:
+    name: urlparse2
+  become: True
+
+- name: Enable LXD Rest API
+  command: "lxc config set core.https_address '127.0.0.1:8443'"
+  become: True
+
+- name: Set the trust password for LXD to the one in inventory
+  command: "lxc config set core.trust_password {{ lxd_trust_pw }}"
+  become: True
+
+
+- name: Create our client certificate locally
+  delegate_to: 127.0.0.1
+  command: "openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj ''/C=DE/ST=ANSIBLE/L=ANSIBLE/O=ANSIBLE/CN=ansible'' -keyout ''{{ role_path }}/files/lxd.key'' -out ''{{ role_path }}/files/lxd.cert''"
+  args:
+    creates: "{{ role_path }}/files/lxd.key"
+
+- name: Check if authed
+  uri:
+    url: "https://127.0.0.1:8443/1.0"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: check_auth1
+
+
+- name:
+  debug:
+    msg: "{{ check_auth1 }}"
+
+- name: Add own certificate to LXD
+  when: check_auth1.json.metadata.auth == "untrusted"
+  uri:
+    url: "https://127.0.0.1:8443/1.0/certificates"
+    method: POST
+    body:
+      type: client
+      password: "{{ lxd_trust_pw}}"
+    body_format: json
+    follow_redirects: all
+    status_code: 201
+    return_content: True
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: add_cert
+
+- name:
+  debug:
+    msg: "{{ add_cert }}"
+
+- name: Check if authed
+  uri:
+    url: "https://127.0.0.1:8443/1.0"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: check_auth
+  failed_when: check_auth.json.metadata.auth == "untrusted"
+  until: check_auth.json.metadata.auth == "trusted"
+  retries: 3
+  delay: 10
+
+- name:
+  debug:
+    msg: "{{ check_auth }}"

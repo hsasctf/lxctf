@@ -1,0 +1,25 @@
+# ca.cnf
+# This configuration file is used by the 'req' command when the root certificates is created.
+[ req ]
+default_bits            = 2048                  # default strength of client certificates
+default_md              = sha256
+encrypt_key             = no                   # "no" is equivalent to -nodes
+prompt                  = no
+string_mask             = utf8only
+distinguished_name      = ca_distinguished_name     # root certificate name
+req_extensions          = req_cert_extensions
+# attributes              = req_attributes
+
+[ ca_distinguished_name ]
+# root certificate name
+countryName             = DE
+#stateOrProvinceName    = BW
+localityName            = Albstadt
+organizationName        = HSAS-CTF
+#organizationalUnitName  = My Department Name
+commonName              = OpenVPN-CA-{{ team }}
+#emailAddress            = hostmaster@example.org   # email in DN is deprecated, use subjectAltName
+
+[ req_cert_extensions ]
+# nsCertType              = server
+subjectAltName          = email:hostmaster@localhost

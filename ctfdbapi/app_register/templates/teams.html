@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Teams{% endblock %}
+{% block head %}
+    {{ super() }}
+
+{% endblock %}
+{% block content %}
+    <h1>Teams</h1>
+
+    {% for e in events %}
+        {% if loop.first %}
+    
+            <h5 class="header center black-text">Event at {{ e.start.strftime('%Y-%m-%d') }}</h5>
+        
+            <ul>
+            {% for a in e.participants %}
+                {% if a.team.members.count() > 0 %}
+                        <li>{{ a.team.team_name }}; 
+                                <strong>{{ a.team.members.filter(verified != None).count() }}/{{ a.team.members.count() }} members verified</strong>
+                            {% endif %}
+                        </li>
+            {% endfor %}
+            </ul>
+        
+        {% else %}
+        
+    
+            <h5 class="header center black-text">Event at {{ e.start.strftime('%Y-%m-%d') }}</h5>
+        
+            <ul>
+            {% for a in e.participants %}
+                {% if a.team.members.count() > 0 %}
+                        <li>{{ a.team.team_name }}
+                            {% endif %}
+                        </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    
+    {% endfor %}
+
+{% endblock %}

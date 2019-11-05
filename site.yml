@@ -1,0 +1,8 @@
+---
+
+
+- name: include playbook infrastructure
+  import_playbook: infrastructure.yml
+
+- name: include playbook gameserver
+  import_playbook: gameserver.yml

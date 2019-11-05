@@ -1,0 +1,3 @@
+[submodule "services/2019/logserver/src"]
+	path = services/2019/logserver/src
+	url = https://github.com/leoTlr/ctf_logserver

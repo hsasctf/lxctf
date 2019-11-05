@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Attend{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Attend the event</h1>
+
+    {% if attending != None %}
+        You are registered to attend the event.
+        Registered team members:
+        <ul>
+            {% for m in members %}
+                <li>{{ m.user.forename }} {{ m.user.surname }} {{ m.user.email }}.
+                {% if m.user.verified %}
+                Verified at: {{ m.user.verified.strftime('%Y-%m-%d')  }}
+                    {% else %}
+                    <span class="red">Email not verified</span> <form action="{{ url_for('retry_validation', user_id=m.user.id) }}" method="post">
+                        <input type="submit" value="Retry (new email)">
+                    </form>
+                {% endif %}                </li>
+                {% else %}
+                <span class="red">NOT FOUND</span>
+            {% endfor %}
+        </ul>
+    {% else %}
+        You are not yet registered to this event.
+    {% endif %}
+
+    <div class="card-panel red lighten-1">
+        <p>Note: Filling this form will overwrite all your existing team members. Re-verification is needed. Always fill the form with all team
+            members. Minimum count of members is 1.</p>
+        <p>Only use email addresses ending with @hs-albsig.de!</p>
+            
+        <p>If you later decide to de-register from the event just submit an empty form.</p>
+    </div>
+
+    <form action="{{ url_for("attend") }}" method="POST">
+
+                {{ form.email1.label }} {{ form.email1() }}
+                {{ form.forename1.label }} {{ form.forename1() }}
+                {{ form.surname1.label }} {{ form.surname1() }}
+        <hr>
+
+                {{ form.email2.label }} {{ form.email2() }}
+                {{ form.forename2.label }} {{ form.forename2() }}
+                {{ form.surname2.label }} {{ form.surname2() }}
+        <hr>
+
+                {{ form.email3.label }} {{ form.email3() }}
+                {{ form.forename3.label }} {{ form.forename3() }}
+                {{ form.surname3.label }} {{ form.surname3() }}
+        <hr>
+
+                {{ form.email4.label }} {{ form.email4() }}
+                {{ form.forename4.label }} {{ form.forename4() }}
+                {{ form.surname4.label }} {{ form.surname4() }}
+        <hr>
+                {{ form.email5.label }} {{ form.email5() }}
+                {{ form.forename5.label }} {{ form.forename5() }}
+                {{ form.surname5.label }} {{ form.surname5() }}
+        <hr>
+
+        {{ form.csrf_token }}
+        
+        <h4>Rules</h4>
+        <p>The vulnboxes of other teams are the only target for exploitation. Attacks against
+            the
+            competition's infrastructure etc. are forbidden.</p>
+        <p>Causing unnecessarily high loads of CPU, traffic, memory, I/O, etc. ("denial of
+            service")
+            on our infrastructure, other teams (including vulnboxes) or any other party is also
+            strictly prohibited.</p>
+        <p>Breaking a vulnerable service of another team is OK as long as it does not lead to
+            resource spikes.</p>
+        <p>Despite these policies, all participants are responsible for the security of their
+            own
+            hard- and software.</p>
+        
+        {{ form.submit() }}
+
+        
+    </form>
+{% endblock %}

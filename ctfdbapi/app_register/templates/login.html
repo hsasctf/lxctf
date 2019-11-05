@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block head %}
+    {{ super() }}
+
+{% endblock %}
+{% block content %}
+    <h1>Login</h1>
+
+
+    <form action="{{ url_for("login") }}" method="POST">
+
+
+        {{ form.teamname.label }} {{ form.teamname() }}
+        {{ form.password.label }} {{ form.password() }}
+        {{ form.csrf_token }}
+        {{ form.submit() }}
+    </form>
+
+    <strong><a href="{{ url_for("passwordreset") }}">Password reset</a></strong>
+
+
+{% endblock %}

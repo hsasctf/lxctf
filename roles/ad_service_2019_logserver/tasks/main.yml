@@ -1,0 +1,61 @@
+---
+# tasks file for ad_service_2019_logserver
+
+
+- name: run pre tasks for service
+  include_role:
+    name: ad_service_2019_common
+    tasks_from: pre_tasks
+
+
+
+#- name: run the init script from service
+#  script: "{{ role_path }}/../../services/2019/{{ service_name }}/src/init.sh"
+#  args:
+#    chdir: "/home/{{ service_name }}/"
+#    creates: "/home/{{ service_name }}/init.sh"
+#  become: yes
+#  become_user: "{{ service_name }}"
+
+- stat: path=/home/logserver/server
+  register: server_result
+  become: yes
+
+- name: force recompilation
+  file:
+    path: "/home/{{ service_name }}/{{ item }}"
+    state: absent
+  loop:
+    - logfiles
+    - rsa_keys
+    - build
+  become: yes
+  when: server_result.stat.exists == False
+
+
+#- name: create keypair
+#  shell: openssl genrsa -out rsa_keys/priv_key.pem 1>/dev/null 2>/dev/null &&
+#    openssl rsa -pubout -in rsa_keys/priv_key.pem -outform PEM -out rsa_keys/pub_key.pem 1>/dev/null 2>/dev/null
+#  args:
+#    creates: /home/{{ service_name }}/rsa_keys/pub_key.pem
+#    chdir: /home/{{ service_name }}/
+#  become_user: "{{ service_name }}"
+#
+
+
+- name: make init script executable
+  file:
+    path: "/home/{{ service_name }}/init.sh"
+    mode: 0700
+  become: yes
+
+
+- name: run init script
+  shell: 'sudo -H -u {{ service_name }} -- sh -c "cd /home/{{ service_name }}/ && ./init.sh"'
+  become: yes
+
+
+- name: run post tasks for service
+  include_role:
+    name: ad_service_2019_common
+    tasks_from: post_tasks

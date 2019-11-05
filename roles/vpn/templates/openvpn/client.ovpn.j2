@@ -1,0 +1,39 @@
+
+client
+dev tun
+proto udp
+remote {{ inventory_hostname }} 40{{ '%03d'|format(item|replace('team','')|int) }}
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+#ca ca-{{ item }}.crt.pem
+#cert client-{{ item }}.crt.pem
+#key client-{{ item }}.key.pem
+#tls-auth ta-{{ item }}.key 1
+
+<ca>
+{{ lookup('file', role_path+'/files/vpn_tempfiles/'+item+'/'+ 'ca.crt') }}
+</ca>
+<cert>
+{{ lookup('file', role_path+'/files/vpn_tempfiles/'+item+'/'+ 'client1.crt') }}
+</cert>
+<key>
+{{ lookup('file', role_path+'/files/vpn_tempfiles/'+item+'/'+ 'client1.key') }}
+</key>
+<tls-auth>
+{{ lookup('file', role_path+'/files/vpn_tempfiles/'+item+'/'+ 'ta.key') }}
+</tls-auth>
+
+key-direction 1
+
+
+remote-cert-tls server
+cipher AES-128-CBC
+auth SHA256
+
+#dhcp-option DNS 0.0.0.0
+#redirect-gateway def1
+comp-lzo
+verb 3
+

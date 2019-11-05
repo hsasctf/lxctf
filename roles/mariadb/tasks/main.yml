@@ -1,0 +1,205 @@
+---
+# tasks file for mariadb
+
+
+- name: Install MariaDB repository
+  apt_repository:
+    repo: 'deb http://mirror2.hs-esslingen.de/mariadb/repo/10.3/ubuntu xenial main'
+    state: present
+  become: True
+  retries: 10
+  delay: 10
+
+- name: Add repository key to the system
+  apt_key: keyserver=keyserver.ubuntu.com id={{ item }}
+  become: True
+  with_items:
+    - '0xcbcb082a1bb943db'
+    - '0xF1656F24C74CD1D8'
+
+
+  
+- name: Install MariaDB Server, python-mysqldb
+  apt:
+    name:
+      - mariadb-server
+      - python-mysqldb
+      - python-pip
+    state: latest
+    update_cache: yes
+  become: True
+
+- name: install PyMySQL
+  pip:
+    name:
+      - PyMySQL
+  become: yes
+
+- name: Restarting mariadb
+  service:
+    name: "{{ item }}"
+    state: started
+  with_items:
+    - mysql
+
+
+
+# secure installation tasks
+
+- name: update mysql root password for all root accounts
+  become: yes
+  mysql_user: 
+    name: root 
+    host: "{{ item }}" 
+    password: "{{ mysql_root_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    priv: "*.*:ALL,GRANT"
+  with_items:
+    - localhost
+    - '::1'
+    - '127.0.0.1'
+    - "{{ ansible_hostname }}"
+    - "{{ ansible_fqdn }}"
+
+
+
+
+- name: Deletes anonymous MySQL server user for several hosts
+  mysql_user:
+    user: ""
+    host: "{{ item }}"
+    state: "absent"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+  become: True
+  with_items:
+    - localhost
+    - '::1'
+    - '127.0.0.1'
+    - "{{ ansible_hostname }}"
+    - "{{ ansible_fqdn }}"
+
+
+- name: Deletes anonymous MySQL server user for all hosts
+  mysql_user:
+    user: ""
+    state: "absent"
+    host_all: yes
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+  become: True
+
+
+
+  
+
+- name: Removes the MySQL test database
+  mysql_db:
+    db: test
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  become: True
+  
+  
+# ctf db tasks
+
+
+- name: Database with name 'ctf'
+  mysql_db:
+    name: ctf
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  become: True
+  register: db_created
+
+- name: Deleting all existing users with name 'ctf'
+  mysql_user:
+    name: ctf
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+  become: True
+  
+
+- name: Adding deploy DB user and allow access to news_* databases
+  mysql_user:
+    name: ctf
+    password: "{{ mysql_ctf_password }}"
+    #host: "10.38.1.%"
+    host: "localhost"
+    priv: ctf.*:ALL
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+  become: True
+
+
+- name: check if sql dump is available
+  stat:
+    path: "{{ role_path }}/files/ctf_dump.sql"
+  register: dump_file
+  delegate_to: 127.0.0.1
+
+- name: Copying database create table file
+  copy:
+    src: "{{ role_path }}/files/ctf_dump.sql"
+    dest: /tmp
+  when: db_created.changed and dump_file.exists
+  become: True
+
+
+- name: Creating tables for ctf database
+  mysql_db:
+    name: ctf
+    state: import
+    target: /tmp/ctf_dump.sql
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  when: db_created.changed and dump_file.exists
+  become: True
+
+
+- name: absent dump
+  file:
+    path: /tmp/ctf_dump.sql
+    state: absent
+  become: yes
+
+- name: create db model if no dump exists
+  shell: python3 db/database.py
+  args:
+    chdir: /vagrant/ctfdbapi/
+  environment:
+    PYTHONPATH: "/vagrant/ctfdbapi/"
+  #when: db_created.changed and not dump_file.exists
+  #when: not dump_file.exists
+  become: yes
+
+
+- name: Install config file for network settings (bind address)
+  template:
+    src: etc_my.cnf.d_network.cnf.j2
+    dest: /etc/mysql/conf.d/network.cnf
+  become: True
+
+- name: Restarting mariadb
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - mysql
+  become: True
+
+
+
+
+

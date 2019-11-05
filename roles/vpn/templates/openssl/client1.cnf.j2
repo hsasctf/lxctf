@@ -1,0 +1,23 @@
+# client1.cnf
+# This configuration file is used by the 'req' command when a certificate is created for client 1.
+[ req ]
+default_bits            = 2048
+default_md              = sha2
+encrypt_key             = no
+prompt                  = no
+string_mask             = utf8only
+distinguished_name      = client1_distinguished_name
+req_extensions          = req_cert_extensions
+# attributes              = req_attributes
+
+[ client1_distinguished_name ]
+countryName             = DE
+#stateOrProvinceName    = BW
+localityName            = Albstadt
+organizationName        = HSAS-CTF
+#organizationalUnitName  = My Department Name
+commonName              = client1.{{ team }}.vpn.ctf.hs-albsig.de
+
+[ req_cert_extensions ]
+nsCertType              = client
+subjectAltName          = email:hostmaster@example.com

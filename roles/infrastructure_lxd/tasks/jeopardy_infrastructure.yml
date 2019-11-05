@@ -1,0 +1,193 @@
+---
+
+
+
+- name: create jeop_keys directory
+  file:
+    path: "{{ role_path }}/files/jeop_keys"
+    state: directory
+  delegate_to: 127.0.0.1
+
+
+- name: Create jeop SSH keys
+  command: "ssh-keygen -t rsa -b 2048 -C 'SSH Key for jeop{{ hostvars[item]['jeop_num'] }}' -f '{{ role_path }}/files/jeop_keys/{{ item }}' -P '' -q"
+  args:
+    creates: "{{ role_path }}/files/jeop_keys/{{ item }}"
+  with_items:
+    - "{{groups['jeop_containers']}}"
+  delegate_to: 127.0.0.1
+
+
+- name: Check if jeop LXD networks already exists
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks/jeopbr{{ hostvars[item]['jeop_num'] }}"
+    method: GET
+    status_code: 404,200
+    headers:
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_network_check_j
+  with_items:
+    - "{{groups['jeop_containers']}}"
+
+- debug:
+    msg: "{{ lxd_network_check_j }}"
+
+
+
+# SYNC operation success: status_code=200, follow redirects
+# Network post returns 201 when network newly created, 400 when already exists
+- name: Create jeop lxd networks 
+  when: item.0.status == 404
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks"
+    method: POST
+    status_code: 201
+    body:
+      name: "jeopbr{{ hostvars[item.1]['jeop_num'] }}"
+      description: "Network of CTF Jeopardy {{ hostvars[item.1]['jeop_num'] }}"
+      config:
+        ipv6.address: "none"
+        ipv4.address: "10.39.{{ hostvars[item.1]['jeop_num'] }}.254/24"
+        ipv4.nat: "true"
+        ipv4.firewall: "true" # TODO
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_nw_create_j
+  with_together:
+    - "{{ lxd_network_check_j.results }}"
+    - "{{groups['jeop_containers']}}"
+
+- debug:
+    msg: "{{ result_nw_create_j.results }}"
+
+
+
+# FIXME check for existing containers before creatiion
+
+- name: Creating LXD Containers (Jeopardy)
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers"
+    method: POST
+    status_code: 202
+    body:
+      name: jeop{{ hostvars[item]['jeop_num'] }}
+      devices:
+        default:
+          name: eth0
+          nictype: bridged
+          parent: "jeopbr{{ hostvars[item]['jeop_num'] }}"
+          type: nic
+      source:
+        type: image
+        protocol: simplestreams
+        architecture: x86_64
+        profiles:
+          - default
+        persistent: "true"
+        server: https://cloud-images.ubuntu.com/releases
+        alias: "disco"
+      config:
+        limits.cpu: "2"
+        limits.memory: 2048MB
+        user.network-config: |
+          version: 1
+          config:
+            - type: physical
+              name: eth0
+              subnets:
+                - type: static
+                  ipv4: true
+                  address: 10.39.{{ hostvars[item]['jeop_num'] }}.1
+                  netmask: 255.255.255.0
+                  gateway: 10.39.{{ hostvars[item]['jeop_num'] }}.254
+                  control: auto
+            - type: nameserver
+              address: 10.39.{{ hostvars[item]['jeop_num'] }}.254
+        user.user-data: |
+          #cloud-config
+          # Apply updates using apt
+          package_upgrade: false
+          # Set hostname
+          hostname: jeop{{ hostvars[item]['jeop_num'] }}
+          fqdn: jeop{{ hostvars[item]['jeop_num'] }}.ctf.hs-albsig.de
+          manage_etc_hosts: true
+          ssh_authorized_keys:
+            - {{ lookup('file', role_path+'/files/jeop_keys/'+item+'.pub')  }}
+            - {{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}
+    body_format: json
+    return_content: True
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_create_containers_j
+  with_items:
+    - "{{groups['jeop_containers']}}"
+- debug:
+    msg: "{{ result_create_containers_j.results }}"
+# Wait for Async to finish status_code=200
+- name: Wait Async, Creating LXD Containers (Jeopardy)
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 900
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: waiting_j
+  with_items: "{{ result_create_containers_j.results }}"
+
+- name: Waiting result
+  debug:
+    msg: "{{ waiting_j.results }}"
+
+
+
+# ASYNC operation success: status_code=202 (Accepted), do not follow redirects
+- name: Start the Jeopardy containers 
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers/{{ item }}/state"
+    method: PUT
+    status_code: 202
+    body:
+      action: start
+      timeout: 120
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_cotainer_state_start_j
+  with_items:
+    - "{{groups['jeop_containers']}}"
+- name:
+  debug:
+    msg: "{{ lxd_cotainer_state_start_j.results }}"
+# Wait for Async to finish status_code=200
+- name: Wait Async, Start the AD containers
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 120
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  with_items: "{{ lxd_cotainer_state_start_j.results }}"

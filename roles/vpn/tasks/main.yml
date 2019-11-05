@@ -1,0 +1,277 @@
+---
+# tasks file for vpn
+# 
+# not idempotent!
+
+
+- name: install dependencies
+  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
+  become: True
+
+- name: install dependencies
+  apt: name=daemontools-run state=latest
+  become: True
+
+- name: allow openvpn ports
+  ufw:
+    rule: allow
+    port: 40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
+    proto: udp
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+
+- name: allow openvpn ports
+  ufw:
+    rule: allow
+    port: 40254
+    proto: udp
+  become: True
+
+
+
+#
+#
+# # - name: allow ssh
+# #   ufw: rule=allow port={{ansible_ssh_port}} proto=tcp
+# #
+# # - name: enable ufw
+# #   ufw: logging=on state=reloaded
+#
+#
+# 
+#
+
+- name: apt-get update
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: install openvpn
+  apt: name=openvpn state=present
+  become: True
+
+
+
+- name: create vpn_tempfiles directory
+  file:
+    path: "{{ role_path }}/files/vpn_tempfiles"
+    state: directory
+  delegate_to: 127.0.0.1
+
+# create CAs, server certs, client certs for each team
+- include: openssl_ca.yml client_cert_days=90 ca_cert_days=180 team="{{item}}" team_path="{{ role_path }}/files/vpn_tempfiles/{{ item }}"
+  with_items:
+  - "{{groups['ad_containers']}}"
+  - team254
+  delegate_to: 127.0.0.1
+
+
+- name: Create ta.key remotely
+  command: "openvpn --genkey --secret ''/tmp/ta-{{ item }}.key''"
+  args:
+    creates: "/tmp/ta-{{ item }}.key"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: True
+
+# - name: Fetch ta.key
+#   fetch:
+#     src: "/tmp/ta-{{ item }}.key"
+#     dest: "{{ role_path }}/files/vpn_tempfiles/{{ item }}/ta.key"
+#     flat: True
+#     fail_on_missing: True
+#     validate_checksum: True
+#   become: True
+#   with_items:
+#     - "{{groups['ad_containers']}}"
+
+
+- name: download ta.key
+  slurp:
+    src: "/tmp/ta-{{ item }}.key"
+  register: tas
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: True
+
+- debug: msg="{{ tas.results }}"
+
+
+- name: save ta.key keys locally
+  copy: content="{{ item.1.content | b64decode }}" dest="{{ role_path }}/files/vpn_tempfiles/{{ item.0 }}/ta.key"
+  delegate_to: 127.0.0.1
+  with_together:
+    - "{{ groups['ad_containers'] + ['team254',] }}"
+    - "{{ tas.results }}"
+
+
+
+# - file: path="/tmp/ta-{{ item }}.key" state=absent
+#   with_items:
+#     - "{{groups['ad_containers']}}"
+#   become: True
+
+
+
+#----- render config templates -----
+
+
+- name: create vpn_tempfiles directory
+  file:
+    path: "{{ role_path }}/files/client_configs"
+    state: directory
+  delegate_to: 127.0.0.1
+
+- name: create vpn_tempfiles directory
+  file:
+    path: "{{ role_path }}/files/server_configs"
+    state: directory
+  delegate_to: 127.0.0.1
+
+
+
+- name: generate openvpn configs for clients
+  template: src=openvpn/client.ovpn.j2 dest={{ role_path }}/files/client_configs/client-{{ item }}.ovpn 
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create a vpn server config dir for each team
+  file:
+    path: "{{ role_path }}/files/server_configs/{{ item }}"
+    state: directory
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: Copy files for server configs (1)
+  copy: remote_src=True src="{{ role_path }}/files/vpn_tempfiles/{{ item }}/server.key" dest="{{ role_path }}/files/server_configs/{{ item }}/server.key"
+  delegate_to: 127.0.0.1
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+
+- name: Copy files for server configs (2)
+  copy: remote_src=True src="{{ role_path }}/files/vpn_tempfiles/{{ item }}/server.crt" dest="{{ role_path }}/files/server_configs/{{ item }}/server.crt"
+  delegate_to: 127.0.0.1
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+
+- name: Copy files for server configs (3)
+  copy: remote_src=True src="{{ role_path }}/files/vpn_tempfiles/{{ item }}/ca.crt" dest="{{ role_path }}/files/server_configs/{{ item }}/ca.crt"
+  delegate_to: 127.0.0.1
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+
+- name: Copy files for server configs (4)
+  copy: remote_src=True src="{{ role_path }}/files/vpn_tempfiles/{{ item }}/dh2048.pem" dest="{{ role_path }}/files/server_configs/{{ item }}/dh2048.pem"
+  delegate_to: 127.0.0.1
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always   
+
+- name: Copy files for server configs (5)
+  copy: remote_src=True src="{{ role_path }}/files/vpn_tempfiles/{{ item }}/ta.key" dest="{{ role_path }}/files/server_configs/{{ item }}/ta.key"
+  delegate_to: 127.0.0.1
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always   
+
+- name: generate openvpn configs for server
+  template: src=openvpn/server.conf.j2 dest={{ role_path }}/files/server_configs/{{ item }}/server.conf 
+  with_items:
+    - "{{ groups['ad_containers'] }}"
+    - team254
+  delegate_to: 127.0.0.1
+  
+# ---tasks on ctfserver (2)-----
+
+#
+- name: create /etc/openvpn/server_configs
+  file: path=/etc/openvpn/server_configs state=directory mode=0755 owner=root group=root
+  become: True
+
+#
+#
+
+- name: copy vpn server configs to server
+  copy: src="{{ role_path }}/files/server_configs/{{ item }}/" dest="/etc/openvpn/server_configs/{{ item }}/"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: True
+  tags:
+    - always
+  
+
+#------ daemontools openvpn-----
+
+- name: Creates directory /etc/service
+  file: path=/etc/service/ state=directory
+  become: true
+
+- name: Creates directory for vpn services
+  file: path=/etc/service/vpn-{{ item }}/ state=directory
+  become: true
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+
+
+- name: copy run file for openvpn servers
+  template:
+    src: "daemontools/run.j2"
+    dest: /etc/service/vpn-{{ item }}/run
+    owner: root
+    group: root
+    mode: 0744
+  become: true
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+
+
+- svc:
+   name: "vpn-{{ item }}"
+   service_dir: /etc/service
+   state: restarted
+  with_items:
+   - "{{groups['ad_containers']}}"
+   - team254
+  tags:
+    - always
+  become: True
+
+
+
+- name: Securing openvpn server key (only secret file in server config)
+  file:
+    path: "/etc/openvpn/server_configs/{{ item }}/server.key"
+    mode: 0600
+    owner: root
+  with_items:
+   - "{{groups['ad_containers']}}"
+   - team254
+  become: True
+
+
+#-------iptables----------
+
+# TODO iptables routing

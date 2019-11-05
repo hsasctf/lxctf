@@ -1,0 +1,7 @@
+provider: virtualbox
+gameserver_disk: 60
+gameserver_ram: 1400
+gameserver_cpu: 1
+ctfserver_disk: 120
+ctfserver_ram: 2048
+ctfserver_cpu: 2

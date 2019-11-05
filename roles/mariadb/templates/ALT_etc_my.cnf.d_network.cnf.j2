@@ -1,0 +1,6 @@
+# Mariadb network settings
+#
+# {{ ansible_managed }}
+
+[mysqld]
+bind_address={{ ansible_ssh_host }}

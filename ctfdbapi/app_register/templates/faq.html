@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}FAQ{% endblock %}
+{% block head %}
+    {{ super() }}
+
+{% endblock %}
+{% block content %}
+    <h1>FAQ</h1>
+
+    <h5 class="header center black-text">Was ist CTF?</h5>
+    <div class="row center">
+    <p>CTF (Capture the Flag) ist ein teambasiertes Spielprinzip. Dabei treten mehrere Teams gegeneinander an.
+        Das Prinzip ist bekannt aus Computerspielen, es wird aber auch in der IT-Sicherheit angewendet.
+        Wir stellen kurz die CTF-Arten in der IT-Sicherheit vor.</p>
+
+    <h5 class="header center black-text">Welche Arten von CTFs gibt es?</h5>
+    <ul>
+        <li>Bei Jeopardy-CTFs lösen Teams unabhängig voneinander eine Reihe von Rätseln, z.B. aus den Bereichen
+            Forensik, Crypto, Binary usw.
+            Für jede gelöste Aufgabe gibt es Punkte und es gibt mehr Punkte, wenn die Aufgabe schwierig ist. Oft kann
+            die
+            nächste Aufgabe erst dann angefangen werden, wenn die letzte gelöst wurde. Ein Beispiel für so ein CTF ist
+            Defcon CTF quals
+        </li>
+        <li>Bei Attack and Defense CTFs ist jedes Team gleichzeitig Angreifer und Verteidiger. Jedes Team hat ein
+            eigenes Netzwerk
+            oder nur einen Host. Jedes Team hat anfangs Zeit die eigenen Diente zu patchen, bevor Angriffe durch andere
+            Teams möglich werden. Dann werden die Teilnehmer verbunden und das Wargame beginnt. Eigene Dienste
+            beschützen führt dazu, dass man Defense Points erhält. Wenn man fremde Dienste angreift erhält man nach
+            einlösen einer Flag Attack Points. Beispiel für so ein CTF ist das DEF CON CTF, der Weltcup aller CTFs.
+        </li>
+        <li>Mixed-CTFs sind eine Mischung der beiden letztgenannten. Ein Beispiel dafür ist das UCSB iCTF.</li>
+    </ul>
+
+    <h5 class="header center black-text">Worum geht es bei unserem CTF?</h5>
+
+    <p>Dieses CTF ist ein Attack and Defense-CTF. Bei unserem CTF bestehen Teams aus max 5 Personen.
+        Die Teams haben jeweils die gleiche Basis, die mit verschiedenen Diensten und Schwachstellen
+        präpariert
+        ist.</p>
+    <h5>Was ist unsere Aufgabe?</h5>
+    <p>Die Aufgabe ist es die gegnerische Basis anzugreifen und gleichzeitig die eigenen Dienste, die
+        Schwachstellen enthalten,
+        gegen die Angreifer zu schützen. Dabei müssen die Regeln beachtet werden.
+        Findest du eine Schwachstelle, dann schau wie du sie ausnutzen oder schützen kannst.
+    </p>
+    <h5>Wie kann ich gewinnen?</h5>
+    <p>Wenn ein Team bei der generischen Basis eine Schwachstelle ausfindig gemacht hat und diese
+        erfolgreich
+        angegriffen hat, gibt es eine Flag dafür.
+        Die Flag ist eine Zeichenfolge. Diese muss in einem bestimmen Zeitfenster bei dem Gameserver
+        eingelöst
+        werden. Der Scorebot hat die Aufgabe euch die Punkte gutzuschreiben.
+        Dabei unterscheidet man klassisch nach Attack Points und Defense Points. Attack Points bekommt ihr
+        wenn
+        ihr bei der gegnerischen Basis erfolgreich eine Schwachstelle ausnutzt.
+        Defense Points gibt es wenn ihr erfolgreich eure Basis gegen den Angreifer geschützt habt, indem
+        Ihr
+        die Dienste nach Sicherheitslücken absucht und diese fixt.</p>
+    <p>Jedoch solltet ihr wissen, wenn ihr eine falsche Flag einlöst, gibt es Punkteabzug.</p>
+
+
+
+{% endblock %}

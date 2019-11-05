@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Unregister{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Unregister</h1>
+
+    <p>Unregistering is the process of deleting your membership to any team, making it possible to register as a new team. Needed when you are not attending as the same team as in previous events.</p>
+
+    <form action="{{ url_for("unregister") }}" method="POST">
+        {{ form.email.label }} {{ form.email() }}
+        {{ form.csrf_token }}
+        {{ form.submit() }}
+    </form>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+    <script>
+        $(document).ready(function () {
+            $('select').formSelect();
+        });
+    </script>
+{% endblock %}

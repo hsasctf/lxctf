@@ -1,0 +1,10 @@
+architecture: x86_64
+service_name: logserver
+type: web
+description: Http-Logserver in C++. Saves Logs on per-user basis. Use supervisorctl to restart.
+flag_id_description: Flags are identified by the username
+apt_dependencies:
+    - libboost-all-dev
+    - libssl-dev
+    - g++
+    - cmake

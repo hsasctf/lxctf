@@ -1,0 +1,260 @@
+---
+
+- name: create AD team_keys directory
+  file:
+    path: "{{ role_path }}/files/team_keys"
+    state: directory
+  delegate_to: 127.0.0.1
+
+
+
+- name: Create AD SSH keys
+  command: "ssh-keygen -t rsa -b 2048 -C 'SSH Key for CTF team{{ hostvars[item]['team_num'] }}' -f '{{ role_path }}/files/team_keys/{{ item }}' -P '' -q"
+  args:
+    creates: "{{ role_path }}/files/team_keys/{{ item }}"
+  with_items:
+    - "{{groups['ad_containers']}}"
+  delegate_to: 127.0.0.1
+
+
+
+
+- name: Check if LXD profile ad already exists
+  uri:
+    url: "https://127.0.0.1:8443/1.0/profiles/ad"
+    method: GET
+    status_code: 404,200
+    headers:
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_ad_profile
+
+
+- debug:
+    msg: "{{ result_ad_profile }}"
+
+
+- name: Create LXD profile ad
+  when: result_ad_profile.status == 404
+  uri:
+    url: "https://127.0.0.1:8443/1.0/profiles"
+    method: POST
+    status_code: 201
+    body:
+      name: ad
+      description: Profile for AD VMs
+      config:
+        limits.memory: 2000MB
+        limits.cpu: "1"
+      devices:
+        root:
+          path: /
+          pool: default
+          type: disk
+          size: 18GB
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_ad_profile_create
+
+- debug:
+    msg: "{{ result_ad_profile_create }}"
+
+
+
+
+- name: Check if AD LXD networks already exists
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks/teambr{{ hostvars[item]['team_num'] }}"
+    method: GET
+    status_code: 404,200
+    headers:
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_network_check
+  with_items:
+    - "{{groups['ad_containers']}}"
+
+- debug:
+    msg: "{{ lxd_network_check }}"
+
+
+
+# SYNC operation success: status_code=200, follow redirects
+# Network post returns 201 when network newly created, 400 when already exists
+- name: Create AD lxd networks
+  when: item.0.status == 404
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks"
+    method: POST
+    status_code: 201
+    body:
+      name: "teambr{{ hostvars[item.1]['team_num'] }}"
+      description: "Network of CTF Team {{ hostvars[item.1]['team_num'] }}"
+      config:
+        ipv6.address: "none"
+        ipv4.address: "10.40.{{ hostvars[item.1]['team_num'] }}.254/24"
+        ipv4.nat: "true"
+        ipv4.firewall: "true" # TODO
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_nw_create
+  with_together:
+    - "{{ lxd_network_check.results }}"
+    - "{{ groups['ad_containers'] }}"
+- name:
+  debug:
+    msg: "{{ result_nw_create.results }}"
+
+
+# FIXME check for existing containers before creatiion
+
+- name: Creating AD LXD Containers
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers"
+    method: POST
+    status_code: 202
+    body:
+      name: team{{ hostvars[item]['team_num'] }}
+      devices:
+        default:
+          name: eth0
+          nictype: bridged
+          parent: "teambr{{ hostvars[item]['team_num'] }}"
+          type: nic
+      source:
+        type: image
+        protocol: simplestreams
+        architecture: x86_64
+        profiles:
+          - default
+          - ad
+        persistent: "true"
+        server: https://cloud-images.ubuntu.com/releases
+        alias: "disco"
+      config:
+        limits.cpu: "1"
+        limits.memory: 2000MB
+        #security.nesting: "true" #needed for docker
+        user.network-config: |
+          version: 1
+          config:
+            - type: physical
+              name: eth0
+              subnets:
+                - type: static
+                  ipv4: true
+                  address: 10.40.{{ hostvars[item]['team_num'] }}.1
+                  netmask: 255.255.255.0
+                  gateway: 10.40.{{ hostvars[item]['team_num'] }}.254
+                  control: auto
+            - type: nameserver
+              address: 10.40.{{ hostvars[item]['team_num'] }}.254
+        user.user-data: |
+          #cloud-config
+          # Apply updates using apt
+          package_upgrade: false
+          # Set hostname
+          hostname: team{{ hostvars[item]['team_num'] }}
+          fqdn: team{{ hostvars[item]['team_num'] }}.ctf.hs-albsig.de
+          manage_etc_hosts: true
+          ssh_authorized_keys:
+            - {{ lookup('file', role_path+'/files/team_keys/'+item+'.pub')  }}
+            - {{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}
+    body_format: json
+    return_content: True
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: result_create_containers
+  with_items:
+    - "{{ groups['ad_containers'] }}"
+- debug:
+    msg: "{{ result_create_containers.results }}"
+
+
+# Wait for Async to finish status_code=200
+- name: Wait Async, Creating LXD Containers
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 900
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: waiting
+  with_items: "{{ result_create_containers.results }}"
+
+- name: Waiting result
+  debug:
+    msg: "{{ waiting.results }}"
+
+#
+#
+#
+#- name: limit disk size of team containers
+#  command: "lxc config device set {{ item }} root size 20GB"
+#  loop: "{{groups['ad_containers']}}"
+#  become: yes
+
+
+# ASYNC operation success: status_code=202 (Accepted), do not follow redirects
+# TODO 404 should be also ok (finished)
+- name: Start the AD containers 
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers/{{ item }}/state"
+    method: PUT
+    status_code: 202,404
+    body:
+      action: start
+      timeout: 120
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_cotainer_state_start
+  with_items:
+    - "{{groups['ad_containers']}}"
+- name:
+  debug:
+    msg: "{{ lxd_cotainer_state_start.results }}"
+
+# Wait for Async to finish status_code=200
+- name: Wait Async, Start the AD containers
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 120
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  with_items: "{{ lxd_cotainer_state_start.results }}"
+
+
+
+# snapshot

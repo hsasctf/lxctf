@@ -1,0 +1,73 @@
+<div ng-repeat="(service_id, service) in services">
+    <div class='row-fluid'>
+        <div class='span12'>
+            <h2>
+                <span class='glyphicon glyphicon-screenshot'>
+                </span>
+                {{service_id}}:
+                {{service.name}}
+                <small>
+                    Port: {{service.port}} - Status:
+                    <span ng-if="services_status[service_id] == 0">
+                        <span class="label label-danger">Offline</span>
+                    </span>
+                    <span ng-if="services_status[service_id] == 1">
+                        <span class="label label-warning">Online, but nonfunctional</span>
+                    </span>
+                    <span ng-if="services_status[service_id] == 2">
+                        <span class="label label-success">Online</span>
+                    </span>
+                    <span ng-if="services_status[service_id] == -1">
+                        <span class="label label-default">Unknown</span>
+                    </span>
+                </small>
+            </h2>
+            <blockquote>
+                <p>
+                    {{service.description}}
+                </p>
+            </blockquote>
+            <div ng-controller='ToggleCtrl'>
+                <button class='btn' ng-click="toggle()">
+                    <span class='glyphicon glyphicon-flag'>
+                    </span>
+                    Show flag identifiers
+                </button>
+                <div ng-show="visible">
+                    <p>
+                        Flag identifier:   {{service.flag_id.description}}
+                    </p>
+                    <table class='table'>
+                        <thead>
+                            <tr>
+                                <th>
+                                    Team
+                                </th>
+                                <th>
+                                    Flag Identifier
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat='flag_id in service.flag_id.flag_ids'>
+                                <td>
+                                    {{flag_id.team_id}}
+                                </td>
+                                <td>
+                                    {{flag_id.flag_id}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class='row-fluid' ng-hide='services'>
+    <div class='span12'>
+        Loading ...
+    </div>
+</div>
+

@@ -1,0 +1,86 @@
+---
+
+# http://www.macfreek.nl/memory/Create_a_OpenVPN_Certificate_Authority
+
+- name: create a team dir
+  file:
+    path: "{{ team_path }}"
+    state: directory
+
+
+- name: create a team dir/cnf
+  file:
+    path: "{{ team_path }}/cnf"
+    state: directory
+
+
+# - name: create temporary directory for openssl cnf files
+#   tempfile:
+#     state: directory
+#   register: cnf_dir
+
+
+
+
+- name: 
+  template: src={{ citem.src }} dest={{ citem.dest }}
+  with_items:
+    - { src: "openssl/ca-sign.cnf.j2", dest: "{{ team_path }}/cnf/ca-sign.cnf" }
+    - { src: "openssl/ca.cnf.j2", dest: "{{ team_path }}/cnf/ca.cnf" }
+    - { src: "openssl/server.cnf.j2", dest: "{{ team_path }}/cnf/server.cnf" }
+    - { src: "openssl/client1.cnf.j2", dest: "{{ team_path }}/cnf/client1.cnf" }
+  loop_control:
+      loop_var: citem
+    
+
+
+- file: path="{{ team_path }}/index.txt" state=touch
+
+
+- name: Build CA (1)
+  command: "openssl req -new -config ''{{ team_path }}/cnf/ca.cnf'' -keyout ''{{ team_path }}/ca.key'' -out ''{{ team_path }}/ca.req''"
+  args:
+    creates: "{{ team_path }}/ca.req"
+
+- name: Build CA (2)
+  command: "openssl ca -batch -config ''{{ team_path }}/cnf/ca-sign.cnf'' -extensions X509_ca -days {{ ca_cert_days }} -create_serial -selfsign -keyfile ''{{ team_path }}/ca.key'' -in ''{{ team_path }}/ca.req'' -out ''{{ team_path }}/ca.crt''"
+  args:
+    creates: "{{ team_path }}/ca.crt"
+  register: ca_debug
+
+- debug:
+    var: ca_debug
+    verbosity: 4
+
+
+- name: Create dhparams
+  command: "openssl dhparam -out ''{{ team_path }}/dh2048.pem'' 2048"
+  args:
+    creates: "{{ team_path }}/dh2048.pem"
+
+
+- name: Create server request and private key
+  command: "openssl req -new -config ''{{ team_path }}/cnf/server.cnf'' -keyout ''{{ team_path }}/server.key'' -out ''{{ team_path }}/server.req''"
+  args:
+    creates: "{{ team_path }}/server.req"
+
+
+- name: Sign server key
+  command: "openssl ca -batch -config ''{{ team_path }}/cnf/ca-sign.cnf'' -extensions X509_server -in ''{{ team_path }}/server.req'' -out ''{{ team_path }}/server.crt''"
+  args:
+    creates: "{{ team_path }}/server.crt"
+
+
+- name: Create client1 request and private key
+  command: "openssl req -new -config ''{{ team_path }}/cnf/client1.cnf'' -keyout ''{{ team_path }}/client1.key'' -out ''{{ team_path }}/client1.req''"
+  args:
+    creates: "{{ team_path }}/client1.req"
+
+
+- name: Sign client1 key
+  command: "openssl ca -batch -config ''{{ team_path }}/cnf/ca-sign.cnf'' -in ''{{ team_path }}/client1.req'' -out ''{{ team_path }}/client1.crt''"
+  args:
+    creates: "{{ team_path }}/client1.crt"
+
+# one should be able to change the templates later
+- file: path="{{ team_path }}/cnf" state=absent

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <h1 class="header center green-text">Welcome to {{ config.NAME_CTF }}</h1>
+            <div class="row center">
+                <h5 class="header col s12 light">CTF starts at {{ event.start }} (UTC)</h5>
+            </div>
+            <div class="row center">
+                <a href="{{ url_for("attend") }}" id="download-button" class="btn-large waves-effect waves-light green">Attend</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

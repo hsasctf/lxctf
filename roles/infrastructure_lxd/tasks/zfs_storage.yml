@@ -1,0 +1,197 @@
+- name: Check if ZFS Pool already added to LXD
+  uri:
+    url: "https://127.0.0.1:8443/1.0/storage-pools/default"
+    method: GET
+    status_code: 404,200
+    headers:
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_pool_check
+
+- debug:
+    msg: "{{ lxd_pool_check }}"
+
+
+
+- name: Check if running in vagrant (development system)
+  stat: path=/vagrant
+  register: vagrant_dir
+
+
+#- name: Adding ZFS Pool to LXD config on development system, zpool=tank, dataset=lxd
+#  when: lxd_pool_check.status == 404 and vagrant_dir.stat.exists
+#  uri:
+#    url: "https://127.0.0.1:8443/1.0/storage-pools"
+#    method: POST
+#    status_code: 201
+#    body:
+#      config:
+#        zfs.pool_name: tank
+#      driver: zfs
+#      name: default
+#    body_format: json
+#    headers:
+#      Content-Type: "application/json"
+#      Accept: "application/json"
+#    validate_certs: False
+#    client_cert: "{{ role_path }}/files/lxd.cert"
+#    client_key: "{{ role_path }}/files/lxd.key"
+#  register: lxd_zfs_pool_add
+#- name:
+#  debug:
+#    msg: "{{ lxd_zfs_pool_add }}"
+
+
+
+###
+
+- name: create ZFS partition on free space (development system)
+  parted:
+    device: /dev/sda
+    number: 4
+    part_start: 67106816s
+    state: present
+  when: vagrant_dir.stat.exists
+  register: partition
+  become: True
+
+#- name: resize new partition
+#  command: parted /dev/sda resizepart 4 99%
+#  when: vagrant_dir.stat.exists
+#  become: True
+
+- name: get disk info
+  parted:
+    device: /dev/sda
+    unit: MiB
+  register: sda_info
+  when: vagrant_dir.stat.exists
+  become: True
+
+
+- name: create pool if fstype of 4th partition is not zfs
+  command: zpool create -f -o ashift=12 -O atime=off -O dedup=off -O compression=lz4 -O normalization=formD tank /dev/sda4
+  when: partition.changed and sda_info.partitions.3.fstype != "zfs" and vagrant_dir.stat.exists
+  register: pool
+  become: True
+
+
+- name: add dataset lxd
+  command: zfs create tank/lxd
+  become: True
+  when: vagrant_dir.stat.exists
+  ignore_errors: True
+
+
+###
+
+
+# new ZFS Pool: Status 201
+# TODO dev description
+- name: Adding existing ZFS Dataset to LXD config on production system (pool/dataset must be created manually)
+  when: lxd_pool_check.status == 404 #and not vagrant_dir.stat.exists
+  uri:
+    url: "https://127.0.0.1:8443/1.0/storage-pools"
+    method: POST
+    status_code: 201
+    body:
+      config:
+        source: tank/lxd
+      driver: zfs
+      name: default
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_zfs_pool_add
+- name:
+  debug:
+    msg: "{{ lxd_zfs_pool_add }}"
+
+
+
+
+# 
+# results in: Gerät root wurde zu default hinzugefügt
+# results in: error: device already exists
+
+- name: Adding root disk with path=/ and pool=default to profile default
+  uri:
+    url: "https://127.0.0.1:8443/1.0/profiles/default"
+    method: PATCH
+    status_code: 200
+    body:
+      devices:
+        root:
+          path: /
+          pool: default
+          type: disk
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_root_device_default
+- name:
+  debug:
+    msg: "{{ lxd_root_device_default }}"
+
+
+#
+## Docker is extremly slowly running with the inefficient vfs backend
+## when running nested in a container with ZFS filesystem
+## so we will create btrfs-formated Zvols and mount them in the container
+## see: https://www.bjonnh.net/article/20181202_lxdocker_btrfs/
+## see: https://github.com/lxc/lxd/issues/2305
+#
+#- name: add Zvols parent
+#  command: zfs create tank/docker
+#  become: True
+#  ignore_errors: True
+#
+#- name: add Zvols for btrfs
+#  command: "zfs create tank/docker/{{ item }}"
+#  become: True
+#  ignore_errors: True
+#  with_items:
+#    - "{{groups['ad_containers']}}"
+#
+#- name: Create btrfs filesystems on zvols
+#  filesystem:
+#    fstype: btrfs
+#    dev: "/dev/zvol/tank/docker/{{ item }}"
+#  with_items:
+#    - "{{groups['ad_containers']}}"
+#
+#- name: Mount a btrfs filesystem in team container (for Docker)
+#  uri:
+#    url: "https://127.0.0.1:8443/1.0/containers/{{ item }}"
+#    method: PATCH
+#    status_code: 200
+#    body:
+#      devices:
+#        docker:
+#          path: /var/lib/docker
+#          source: "/dev/zvol/tank/docker/{{ item }}"
+#          type: disk
+#    body_format: json
+#    headers:
+#      Content-Type: "application/json"
+#      Accept: "application/json"
+#    validate_certs: False
+#    client_cert: "{{ role_path }}/files/lxd.cert"
+#    client_key: "{{ role_path }}/files/lxd.key"
+#  register: lxd_mount_btfs_for_docker
+#  with_items:
+#    - "{{groups['ad_containers']}}"
+#- name:
+#  debug:
+#    msg: "{{ lxd_mount_btfs_for_docker }}"
+#

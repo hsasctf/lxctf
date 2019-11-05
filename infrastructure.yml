@@ -1,0 +1,73 @@
+- hosts: ctfserver
+  gather_facts: False
+
+  tasks:
+  - name: install pip and python 2
+    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+    become: true
+
+
+
+- hosts: ctfserver
+  tasks:
+
+    - name: Check if running in vagrant (development system)
+      stat: path=/vagrant
+      register: vagrant_dir
+
+
+    - name: install ufw
+      apt:
+        name: ufw
+      become: yes
+
+    - name: allow ssh (anti lockout rule)
+      ufw: rule=allow port={{ansible_ssh_port}} proto=tcp
+      become: True
+
+
+    - name: enable UFW
+      command: ufw --force enable
+      become: True
+
+    - name: restarting ufw
+      service:
+        name: ufw
+        state: restarted
+      become: True
+
+- hosts: ctfserver
+  roles:
+    - infrastructure_lxd
+    - vpn
+  tasks:
+  - name: set timezone to UTC
+    timezone:
+      name: UTC
+    become: yes
+
+
+- hosts: ad_containers
+  gather_facts: False
+
+  tasks:
+  - name: install pip and python 2
+    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+    become: true
+
+
+#- hosts: jeop1
+#  roles:
+#    - status_build_2019
+
+
+- hosts: ad_containers
+  roles:
+     - { role: geerlingguy.pip, become: yes }
+     - ad_service_2019_common
+#     - ad_service_2019_hs_note
+#     - ad_service_2019_ctf_status_service
+#     - ad_service_2019_webalbum
+#     - ad_service_2019_safe_file_check
+     - ad_service_2019_logserver
+

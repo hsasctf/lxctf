@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Register Team{% endblock %}
+{% block head %}
+    {{ super() }}
+
+{% endblock %}
+{% block content %}
+    <h1>Register Team</h1>
+
+
+    <form action="{{ url_for("register") }}" method="POST">
+
+
+        {{ form.teamname.label }} {{ form.teamname() }}
+        {{ form.password.label }} {{ form.password() }}
+        {{ form.password2.label }} {{ form.password2() }}
+        {{ form.csrf_token }}
+        {{ form.submit() }}
+    </form>
+
+
+
+{% endblock %}

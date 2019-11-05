@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+
+    {% block head %}
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+        <title>{% block title %}{% endblock %} - HS-AlbSig CTF</title>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" media="screen,projection">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.css') }}"
+              media="screen,projection">
+    {% endblock %}
+</head>
+<body>
+<nav class="grey darken-4" role="navigation">
+    <div class="nav-wrapper container">
+        <a id="logo-container" href="/" class="brand-logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" height="64px" width="auto"/>
+        </a>
+        <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        <ul class="right hide-on-med-and-down">
+            {% include "navigation.html" %}
+        </ul>
+    </div>
+</nav>
+
+<ul class="sidenav" id="mobile-demo">
+    {% include "navigation.html" %}
+</ul>
+
+<main>
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+
+                    {% for message in messages %}
+                        <div class="chip">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <div class="container">
+        <div class="section">
+            <div class="row">
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-white-text"><i class="material-icons">email</i></h2>
+                        <h5 class="center">Contact CTF Development Team</h5>
+                        <p class="light center">If you have any questions, do not hesitate to contact us via email:</p>
+                        <div class="center">
+                            <p>
+                                <a class="blue-text text-darken-4 " href="mailto:{{ config.CTF_MAILBOX }}">CTF project
+                                    team</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-white-text"><i class="material-icons">group</i></h2>
+                        <h5 class="center">A Team Game Experience</h5>
+                        <p class="light center">CTF is a team game with a maximum of 5 persons/team.</p>
+                    </div>
+                </div>
+                <div class="col s12 m4">
+                    <div class="icon-block">
+                        <h2 class="center light-white-text"><i class="material-icons">settings</i></h2>
+                        <h5 class="center">CTF</h5>
+                        <p class="light center"><a href="{{ url_for('faq') }}">FAQ</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<footer class="page-footer grey darken-4">
+    <div class="container">
+        <div class="row">
+            {% block footer %}
+
+                <h5 class="white-text">CTF</h5>
+                <p class="grey-text text-lighten-4">{{ config.FOOTER_DESCRIPTION }}</p>
+                <div class="footer-copyright">
+                    <p>{{ config.YEAR }} CTF was developed by {{ config.AUTHORS }}</p>
+                </div>
+
+            {% endblock %}
+
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="{{ url_for('static', filename='js/materialize.js') }}"></script>
+<script src="{{ url_for('static', filename='js/init.js') }}"></script>
+
+{% block extrajs %}
+{% endblock %}
+</body>
+</html>

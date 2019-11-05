@@ -1,0 +1,55 @@
+---
+
+- name: create user for service
+  user:
+    name: "{{ service_name }}"
+    shell: "/bin/bash"
+  become: True
+
+
+- name: create directory for service logs
+  file:
+    path: "/var/log/{{ service_name }}"
+    state: directory
+    owner: "{{ service_name }}"
+    group: "{{ service_name }}"
+  become: yes
+
+
+- name: copy service to AD container
+  synchronize:
+    src: "{{ role_path }}/../../services/2019/{{ service_name }}/src/"
+    dest: "/home/{{ service_name }}"
+    use_ssh_args: yes
+  become: yes
+
+
+- name: set owner/group for service files
+  file:
+    path: "/home/{{ service_name }}"
+    owner: "{{ service_name }}"
+    group: "{{ service_name }}"
+    recurse: yes
+  become: yes
+
+- name: make service dir unreadable from other services
+  file:
+    path: "/home/{{ service_name }}"
+    mode: 0700
+  become: yes
+
+
+- name: look up apt deps from service info.yaml
+  include_vars:
+    file: "{{ role_path }}/../../services/2019/{{ service_name }}/info.yaml"
+    name: info
+
+- set_fact: service_base_path="{{ role_path }}/../../services/2019/{{ service_name }}"
+
+
+- name: install deps for service
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  loop: "{{ info.apt_dependencies }}"
+  become: yes

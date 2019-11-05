@@ -1,0 +1,26 @@
+<li><a href="{{ url_for("faq") }}">FAQ</a></li>
+<li><a href="{{ url_for("teams") }}">Teams</a></li>
+
+<li><a href="{{ url_for("attend") }}">Attend</a></li>
+<li><a href="{{ url_for("unregister") }}">Unregister</a></li>
+
+
+{% if current_user.team_name %}
+    <li>
+        <a href="{{ url_for("logout") }}">Logout ({{ current_user.team_name }})</a>
+    </li>
+
+{% else %}
+    <li>
+
+        <a href="{{ url_for("login") }}">Login</a>
+    </li>
+
+    <li>
+
+        <a href="{{ url_for("register") }}">Register Team</a>
+    </li>
+
+
+{% endif %}
+

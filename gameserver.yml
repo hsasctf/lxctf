@@ -1,0 +1,118 @@
+- hosts: web
+  tasks:
+
+  - name: remove python3-pip
+    apt:
+      name: python3-pip
+      state: absent
+    become: yes
+
+  - name: Install packages
+    apt:
+      name:
+        - redis-server
+        - python3-cryptography
+        - python3-pip
+        - python-bs4
+        - python-lxml
+        - python-requests
+        - openvpn
+        - libmysqlclient-dev
+        - libffi-dev
+      state: latest
+      update_cache: yes
+    become: yes
+
+- hosts: web
+  roles:
+  - mariadb
+  #- scorebot_deps_2019
+  tasks:
+
+  - user:
+      name: vagrant
+    become: True
+
+
+
+  - name: install pip and python 2
+    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+    become: true
+
+
+  - name: set timezone to UTC
+    timezone:
+      name: UTC
+    become: yes
+
+  - file: path=/vagrant state=directory
+    become: yes
+
+  - name: sync project to container
+    synchronize:
+      src: ./
+      dest: /vagrant
+      use_ssh_args: yes
+    become: yes
+
+  - name: Create a symbolic link
+    file:
+      src: /vagrant/ctfdbapi
+      dest: /opt/ctfdbapi
+      state: link
+    become: yes
+
+  - name: Create a symbolic link
+    file:
+      src: /vagrant/scorebot
+      dest: /opt/scorebot
+      state: link
+    become: yes
+
+  - name: log dir
+    file:
+      path: /var/log/ctf/
+      state: directory
+      owner: vagrant
+      group: vagrant
+      recurse: true
+    become: yes
+
+
+  - service: name=redis-server state=started
+
+
+
+  - name: install requirements for cryptography
+    apt:
+      name:
+        - python3-dev
+        - libffi-dev
+        - libssl-dev
+        - build-essential
+    become: yes
+
+
+
+  - name: Install requirements
+    pip:
+      requirements: /opt/ctfdbapi/requirements.txt
+      executable: pip3
+      #virtualenv: /home/{{role_path|basename}}/env
+      #virtualenv_python: python3
+    become: yes
+
+
+  - name: Check if running in vagrant (development system)
+    stat: path=/vagrant
+    register: vagrant_dir
+
+
+
+  - name: set owner/group for service files
+    file:
+      path: "/vagrant"
+      owner: "vagrant"
+      group: "vagrant"
+      recurse: yes
+    become: yes

@@ -1,0 +1,35 @@
+port 40{{ '%03d'|format(item|replace('team','')|int) }}
+proto udp
+dev tun
+duplicate-cn # allow multiple connections with same common name
+client-to-client
+
+ca ca.crt
+cert server.crt # Server public key
+key server.key # Server private key
+dh dh2048.pem # Diffie-Hellman parameters
+server 10.41.{{ item|replace('team','')|int }}.0 255.255.255.0 # team's vpn network
+#ifconfig-pool-persist ipp.txt
+
+push "route 10.40.0.0 255.255.0.0" # team vms
+push "route 10.39.0.0 255.255.0.0" # jeop vms
+push "route 10.38.0.0 255.255.0.0" # gameserver vms
+
+tls-auth ta.key 0
+#crl-verify crl.pem
+
+
+log /var/log/openvpn-{{ item }}.log
+status /var/log/openvpn-status-{{ item }}.log
+
+
+
+keepalive 10 120
+cipher AES-128-CBC
+auth SHA256
+group nogroup
+user nobody
+comp-lzo
+persist-key
+persist-tun
+verb 3

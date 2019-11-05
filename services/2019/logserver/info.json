@@ -1,0 +1,11 @@
+{
+  "name" : "logserver",
+  "authors" : ["Leo"],
+  "points": 100,
+  "flag_id_description": "user / request target / jwt audience",
+  "service_description": "Best logserver ever. Send your important stuff to have it saved. No frontend -> super secure. Use *supervisorctl restart logserver* to restart.",
+  "port" : 5001,
+  "getflag" : "scripts/getflag.py",
+  "setflag" : "scripts/setflag.py",
+  "is_working" : 1
+}

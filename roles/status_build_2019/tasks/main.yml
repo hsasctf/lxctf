@@ -1,0 +1,156 @@
+---
+# tasks file for status_build_2019
+
+
+
+
+- name: deps for status_system
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+  vars:
+    packages:
+      - libboost-all-dev
+      - openssl
+      - libssl-dev
+      - g++
+      - cmake
+  become: yes
+
+
+
+- name: create user for service
+  user:
+    name: "ctf_status_service_{{ item }}"
+    shell: "/bin/bash"
+  loop: "{{ groups['ad_containers'] }}"
+  become: True
+
+
+
+- name: folders for status svc clients
+  file:
+    path: "/home/ctf_status_service_{{ item }}"
+    state: directory
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+- name: copy service to to gameserver multiple times
+  synchronize:
+    src: "{{ role_path }}/../../services/2019/ctf_status_service/src_score/"
+    dest: "/home/ctf_status_service_{{ item }}"
+    use_ssh_args: yes
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+
+
+- name: save base path
+  set_fact:
+    base_path: "{{ role_path }}/../../services/2019/ctf_status_service"
+
+
+- name: save css path
+  set_fact:
+    css_path: "{{ base_path }}/src_score/src/client_server"
+
+
+- name: template several files
+  template:
+    src: "{{ css_path }}/config/config_client.xml.j2"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/config/config_client.xml"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+- name: template several files
+  template:
+    src: "{{ css_path }}/client.cpp.j2"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/client.cpp"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/certs/ca.cert.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/ca.cert.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/{{ item }}IntermediateCA/certs/ca-chain.cert.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/ca-chain.cert.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/{{ item }}IntermediateCA/certs/client.cert.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/client.cert.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/{{ item }}IntermediateCA/private/client.key.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/client.key.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/{{ item }}IntermediateCA/certs/server.cert.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/server.cert.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+- name: copy ssl files
+  copy:
+    src: "{{ base_path }}/openssl/ca/{{ item }}IntermediateCA/private/server.key.pem"
+    dest: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/server.key.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+- name: Create dhparams
+  command: "openssl dhparam -out ''/home/ctf_status_service_{{ item }}/src/client_server/ssl/dh2048.pem'' 2048"
+  args:
+    creates: "/home/ctf_status_service_{{ item }}/src/client_server/ssl/dh2048.pem"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+- name: force rebuild
+  file:
+    path: "/home/ctf_status_service_{{ item }}/src/client_server/build/"
+    state: absent
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+
+- name: folders for status svc clients
+  file:
+    path: "/home/ctf_status_service_{{ item }}/src/client_server/build/"
+    state: directory
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+- name: run cmake
+  shell: cmake ..
+  args:
+    creates: "/home/ctf_status_service_{{ item }}/src/client_server/build/Makefile"
+    chdir: "/home/ctf_status_service_{{ item }}/src/client_server/build/"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+- name: run make
+  shell: make
+  args:
+    creates: "/home/ctf_status_service_{{ item }}/src/client_server/build/client"
+    chdir: "/home/ctf_status_service_{{ item }}/src/client_server/build/"
+  loop: "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+
+
+

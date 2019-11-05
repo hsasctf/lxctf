@@ -1,0 +1,1 @@
+to make git create this dir on cloning preventing error on rsa keygen during vagrant up because of non-existing dir

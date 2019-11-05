@@ -1,0 +1,173 @@
+---
+
+
+- name: Check if gameservers LXD networks already exists
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks/gamebr"
+    method: GET
+    status_code: 404,200
+    headers:
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_network_check_g
+
+- debug:
+    msg: "{{ lxd_network_check_g }}"
+
+
+# SYNC operation success: status_code=200, follow redirects
+# Network post returns 201 when network newly created, 400 when already exists
+- name: Create the gameservers network
+  when: lxd_network_check_g.status == 404
+  uri:
+    url: "https://127.0.0.1:8443/1.0/networks"
+    method: POST
+    status_code: 201
+    body:
+      name: "gamebr"
+      description: "Network of CTF Gameservers"
+      config:
+        ipv6.address: "none"
+        ipv4.address: "10.38.1.254/24"
+        ipv4.nat: "true"
+        ipv4.firewall: "true" # TODO
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: result_nw_create_g
+
+
+- debug:
+    msg: "{{ result_nw_create_g }}"
+
+
+
+# FIXME check for existing containers before creatiion
+
+- name: Creating LXD Containers (Gameserver)
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers"
+    method: POST
+    status_code: 202
+    body:
+      name: "{{ item }}"
+      devices:
+        default:
+          name: eth0
+          nictype: bridged
+          parent: "gamebr"
+          type: nic
+      source:
+        type: image
+        protocol: simplestreams
+        architecture: x86_64
+        profiles:
+          - default
+        persistent: "true"
+        server: https://cloud-images.ubuntu.com/releases
+        alias: "x"
+      config:
+        limits.cpu: "1"
+        limits.memory: 1024MB
+        security.nesting: "true" # needed for setflag/getflag scripts which need containers
+        user.network-config: |
+          version: 1
+          config:
+            - type: physical
+              name: eth0
+              subnets:
+                - type: static
+                  ipv4: true
+                  address: "{{ hostvars[item]['ansible_host'] }}"
+                  netmask: 255.255.255.0
+                  gateway: 10.38.1.254
+                  control: auto
+            - type: nameserver
+              address: 10.38.1.254
+        user.user-data: |
+          #cloud-config
+          # Apply updates using apt
+          package_upgrade: false
+          # Set hostname
+          hostname: {{ item }}
+          fqdn: {{ item }}.ctf.hs-albsig.de
+          manage_etc_hosts: true
+          ssh_authorized_keys:
+            - {{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}
+    body_format: json
+    return_content: True
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+  register: result_create_containers_g
+  with_items:
+    - "{{groups['game_containers']}}"
+- debug:
+    msg: "{{ result_create_containers_g.results }}"
+
+# Wait for Async to finish status_code=200
+- name: Wait Async, Creating LXD Containers (Gameserver)
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 900
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: waiting_g
+  with_items: "{{ result_create_containers_g.results }}"
+
+- name: Waiting result
+  debug:
+    msg: "{{ waiting_g.results }}"
+
+
+
+# ASYNC operation success: status_code=202 (Accepted), do not follow redirects
+- name: Start the gameservers containers 
+  uri:
+    url: "https://127.0.0.1:8443/1.0/containers/{{ item }}/state"
+    method: PUT
+    status_code: 202
+    body:
+      action: start
+      timeout: 120
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  register: lxd_cotainer_state_start_g
+  with_items:
+    - "{{groups['game_containers']}}"
+- name:
+  debug:
+    msg: "{{ lxd_cotainer_state_start_g.results }}"
+
+# Wait for Async to finish status_code=200
+- name: Wait Async, Start the gamerservers containers
+  uri:
+    url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
+    method: GET
+    follow_redirects: all
+    status_code: 200
+    return_content: True
+    timeout: 120
+    validate_certs: False
+    client_cert: "{{ role_path }}/files/lxd.cert"
+    client_key: "{{ role_path }}/files/lxd.key"
+  with_items: "{{ lxd_cotainer_state_start_g.results }}"
