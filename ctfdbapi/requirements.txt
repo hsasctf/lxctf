@@ -1,5 +1,5 @@
 alembic==0.9.2
-ansible==2.7.6
+ansible==2.7.12
 asn1crypto==0.24.0
 Babel==2.6.0
 bcrypt==3.1.6
