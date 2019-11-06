@@ -24,9 +24,6 @@
     become: yes
 
 - hosts: web
-  roles:
-  - mariadb
-  #- scorebot_deps_2019
   tasks:
 
   - user:
@@ -116,3 +113,8 @@
       group: "vagrant"
       recurse: yes
     become: yes
+
+- hosts: web
+  roles:
+    - mariadb
+  #- scorebot_deps_2019

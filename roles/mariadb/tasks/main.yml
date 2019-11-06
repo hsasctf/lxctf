@@ -129,7 +129,7 @@
   become: True
   
 
-- name: Adding deploy DB user and allow access to news_* databases
+- name: Adding deploy DB user and allow access to ctf_* databases
   mysql_user:
     name: ctf
     password: "{{ mysql_ctf_password }}"
@@ -153,7 +153,7 @@
   copy:
     src: "{{ role_path }}/files/ctf_dump.sql"
     dest: /tmp
-  when: db_created.changed and dump_file.exists
+  when: db_created.changed and dump_file.stat.exists
   become: True
 
 
@@ -164,7 +164,7 @@
     target: /tmp/ctf_dump.sql
     login_user: root
     login_password: "{{ mysql_root_password }}"
-  when: db_created.changed and dump_file.exists
+  when: db_created.changed and dump_file.stat.exists
   become: True
 
 
@@ -180,8 +180,7 @@
     chdir: /vagrant/ctfdbapi/
   environment:
     PYTHONPATH: "/vagrant/ctfdbapi/"
-  #when: db_created.changed and not dump_file.exists
-  #when: not dump_file.exists
+  when: db_created.changed and not dump_file.stat.exists
   become: yes
 
 
