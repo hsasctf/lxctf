@@ -1,5 +1,8 @@
 - hosts: web
   tasks:
+  - name: install pip and python 2
+    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+    become: true
 
   - name: remove python3-pip
     apt:
@@ -27,14 +30,14 @@
   tasks:
 
   - user:
-      name: vagrant
+      name: ctf
     become: True
 
+  - name: Check if running in vagrant (development system)
+    stat: path=/vagrant
+    register: vagrant_dir
 
 
-  - name: install pip and python 2
-    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
-    become: true
 
 
   - name: set timezone to UTC
@@ -42,26 +45,46 @@
       name: UTC
     become: yes
 
-  - file: path=/vagrant state=directory
+  - file: path=/srv/ctf state=directory
     become: yes
 
-  - name: sync project to container
+  - name: sync project to container when not dev system
     synchronize:
       src: ./
-      dest: /vagrant
+      dest: /srv/ctf
       use_ssh_args: yes
+    when: vagrant_dir.stat.exists == False
+    become: yes
+
+  - name: configure lxd to mount vagrant dir for development (subuid file)
+    lineinfile:
+      path: /etc/subuid
+      line: "root:1000:1"
+    when: vagrant_dir.stat.exists
+    become: yes
+
+  - name: configure lxd to mount vagrant dir for development (subgid file)
+    lineinfile:
+      path: /etc/subgid
+      line: "root:1000:1"
+    when: vagrant_dir.stat.exists
+    become: yes
+
+  - name: configure lxd to mount vagrant dir for development (raw.idmap)
+    command: lxc config set web raw.idmap "both 1000 1001"
+    when: vagrant_dir.stat.exists
     become: yes
 
   - name: Create a symbolic link
     file:
-      src: /vagrant/ctfdbapi
+      src: /srv/ctf/ctfdbapi
       dest: /opt/ctfdbapi
       state: link
     become: yes
 
   - name: Create a symbolic link
     file:
-      src: /vagrant/scorebot
+      src: /srv/ctf/scorebot
       dest: /opt/scorebot
       state: link
     become: yes
@@ -70,8 +93,8 @@
     file:
       path: /var/log/ctf/
       state: directory
-      owner: vagrant
-      group: vagrant
+      owner: ctf
+      group: ctf
       recurse: true
     become: yes
 
@@ -100,17 +123,15 @@
     become: yes
 
 
-  - name: Check if running in vagrant (development system)
-    stat: path=/vagrant
-    register: vagrant_dir
+
 
 
 
   - name: set owner/group for service files
     file:
-      path: "/vagrant"
-      owner: "vagrant"
-      group: "vagrant"
+      path: "/srv/ctf"
+      owner: "ctf"
+      group: "ctf"
       recurse: yes
     become: yes
 

@@ -122,25 +122,40 @@ if __name__ == "__main__":
         event = new_demo_event(ad_start_minutes=minutes)
         logger.info("Event: Defense time started, AD will start at {} (UTC)".format(event.attack_defense_start))
 
-        logger.info("Let 3 random teams attend?")
-        input()
-        teams = assign_teams(event)
 
-        logger.info("Add test team 'test' with password Password1234")
+
+        logger.info("Add test team 'test1' with password Password1234")
         input()
         test_team = Team()
-        test_team.team_name = 'test'
+        test_team.team_name = 'test1'
         test_team.password = '3e881d5529e4560a59104c87d8851644cdd6d67c0d74c5e9de58cc0944c030b3fe2d76aedf3aa98e8245ec5c6066cb5e070b679ebff3fbead761f551b6f327f4'
         test_team.password_salt = 'GdMnKywT0G4KJADjZ8KQiYt2QWNOkmNx9SREn2StqZMuecaWcGgnK1ANqFjLSXON2VszHm6eECTUqEa4PrCHdNNdlIJY8sz6FMjCQmNpVOd5E5IRzCriTYFdAGuGP3cY'
         db_session.add(test_team)
         db_session.commit()
 
-        atest_team = AttendingTeam()
-        atest_team.team = test_team
-        atest_team.event = event
-        atest_team.subnet = 4
-        db_session.add(atest_team)
+        logger.info("Add test team 'test2' with password Password1234")
+        input()
+        test_team = Team()
+        test_team.team_name = 'test2'
+        test_team.password = '3e881d5529e4560a59104c87d8851644cdd6d67c0d74c5e9de58cc0944c030b3fe2d76aedf3aa98e8245ec5c6066cb5e070b679ebff3fbead761f551b6f327f4'
+        test_team.password_salt = 'GdMnKywT0G4KJADjZ8KQiYt2QWNOkmNx9SREn2StqZMuecaWcGgnK1ANqFjLSXON2VszHm6eECTUqEa4PrCHdNNdlIJY8sz6FMjCQmNpVOd5E5IRzCriTYFdAGuGP3cY'
+        db_session.add(test_team)
         db_session.commit()
+
+
+        logger.info("Add test team 'test3' with password Password1234")
+        input()
+        test_team = Team()
+        test_team.team_name = 'test3'
+        test_team.password = '3e881d5529e4560a59104c87d8851644cdd6d67c0d74c5e9de58cc0944c030b3fe2d76aedf3aa98e8245ec5c6066cb5e070b679ebff3fbead761f551b6f327f4'
+        test_team.password_salt = 'GdMnKywT0G4KJADjZ8KQiYt2QWNOkmNx9SREn2StqZMuecaWcGgnK1ANqFjLSXON2VszHm6eECTUqEa4PrCHdNNdlIJY8sz6FMjCQmNpVOd5E5IRzCriTYFdAGuGP3cY'
+        db_session.add(test_team)
+        db_session.commit()
+
+        logger.info("Let 3 random teams attend?")
+        input()
+        teams = assign_teams(event)
+
 
         logger.info("Add services to DB?")
         input()
