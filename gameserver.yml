@@ -81,8 +81,13 @@
       ignore_errors: yes
       become: yes
 
+    - pause:
+        seconds: 40
+
+
 - hosts: web
   tasks:
+
 
     - name: Create a symbolic link
       file:
