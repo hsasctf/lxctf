@@ -1,3 +1,5 @@
+from functools import wraps
+
 from sqlalchemy import func
 
 from flask_httpauth import HTTPBasicAuth
@@ -9,11 +11,12 @@ from flask import Flask, session, request, flash, url_for, redirect, render_temp
 from db.database import db_session
 from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
     Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
+from app.api import verify_flag
 
 from hashlib import sha512
 
 import redis
-import requests
+import ipaddress
 
 web = Blueprint('web', __name__,
                 template_folder='templates')
@@ -21,6 +24,17 @@ web = Blueprint('web', __name__,
 auth = HTTPBasicAuth()
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
+
+def get_team_num(ip):
+    request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+
+def find_team(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        print("IP:"+ip)
+        return f(*args, **kwargs)
+    return decorated_function
 
 def get_attacking_team():
     team = Team.query.filter(func.lower(Team.team_name) == func.lower(get_real_username(auth.username()))).first()
@@ -93,23 +107,22 @@ def get_real_username(username):
 
 
 @web.route("/")
-@auth.login_required
-def index():
+@find_team
+def index(team=None):
     return render_template('index.html')
 
 
 @web.route('/config')
-@auth.login_required
-def get_config():
+@find_team
+def get_config(team=None):
     return jsonify({'ctf_name': current_app.config["CTF_NAME"], 'team_name': get_real_username(auth.username())})
 
 
-from app.api import verify_flag
 
 
 @web.route('/flag', methods=['POST'])
-@auth.login_required
-def submit_flag():
+@find_team
+def submit_flag(team=None):
     attacking_team = get_attacking_team()
 
     return verify_flag(int(attacking_team.id), request.get_json()['flag'])
@@ -121,20 +134,20 @@ def get_scores():
 
 
 @web.route('/services')
-@auth.login_required
-def get_services():
+@find_team
+def get_services(team=None):
     return redis_client.get('ctf_services')
 
 
 @web.route('/jeopardies')
-@auth.login_required
-def get_jeopardies():
+@find_team
+def get_jeopardies(team=None):
     return redis_client.get('ctf_jeopardy_list')
 
 
 @web.route('/services_status')
-@auth.login_required
-def get_services_status():
+@find_team
+def get_services_status(team=None):
     status = json.loads(redis_client.get('ctf_services_status'))
     result = {}
 
@@ -152,8 +165,3 @@ def get_services_status():
 @web.route('/tick_change_time')
 def get_tick_duration():
     return redis_client.get('ctf_tick_change_time')
-
-
-@web.route('/logout')
-def logout():
-    return ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})
