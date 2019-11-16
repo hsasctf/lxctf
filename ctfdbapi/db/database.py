@@ -46,5 +46,5 @@ if __name__ == '__main__':
 
     from alembic.config import Config
     from alembic import command
-    alembic_cfg = Config('/vagrant/ctfdbapi/alembic.ini')
+    alembic_cfg = Config('/srv/ctf/ctfdbapi/alembic.ini')
     command.stamp(alembic_cfg, "head")
