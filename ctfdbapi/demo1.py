@@ -170,7 +170,6 @@ if __name__ == "__main__":
         from urllib.parse import quote
 
         logger.info("-----")
-        logger.warning("Firefox recommended")
         logger.info(
             "or login as Admin using this URL: http://{}@10.38.1.1:4999/admin/".format(':'.join(ADMIN_CREDENTIALS)))
         logger.info("-----")

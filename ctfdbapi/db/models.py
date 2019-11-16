@@ -13,6 +13,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import UniqueConstraint, create_engine
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql.ddl import CreateTable
 
@@ -92,6 +93,10 @@ class Team(ModelBase, UserMixin):
 
     def check_password(self, password):
         return self.password == sha512("{}{}".format(password, self.password_salt).encode("utf8")).hexdigest()
+
+    @hybrid_property
+    def current_attending_team(self):
+        return self.participations.order_by(AttendingTeam.id.desc()).first()
 
     def __str__(self):
         return "{}".format(self.team_name)  # used for password reset! do not change
