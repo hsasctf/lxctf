@@ -70,19 +70,22 @@
       when: in_vagrant is defined
       become: yes
 
-    - name: restart webcontainer
-      command: lxc restart web
-      when: in_vagrant is defined
-      become: yes
-
     - name: configure lxd to mount vagrant dir for development (bind mount)
       command: lxc config device add web vagrant disk source=/vagrant path=/srv/ctf
       when: in_vagrant is defined
       ignore_errors: yes
+      register: bind_mount
+      become: yes
+
+    - name: restart webcontainer
+      command: lxc restart web
+      when: in_vagrant is defined and bind_mount.rc == 0
       become: yes
 
     - pause:
         seconds: 40
+      when: in_vagrant is defined and bind_mount.rc == 0
+
 
 
 - hosts: web
