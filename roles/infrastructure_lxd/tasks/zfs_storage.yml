@@ -15,13 +15,10 @@
 
 
 
-- name: Check if running in vagrant (development system)
-  stat: path=/vagrant
-  register: vagrant_dir
 
 
 #- name: Adding ZFS Pool to LXD config on development system, zpool=tank, dataset=lxd
-#  when: lxd_pool_check.status == 404 and vagrant_dir.stat.exists
+#  when: lxd_pool_check.status == 404 and in_vagrant is defined
 #  uri:
 #    url: "https://127.0.0.1:8443/1.0/storage-pools"
 #    method: POST
@@ -53,13 +50,13 @@
     number: 4
     part_start: 67106816s
     state: present
-  when: vagrant_dir.stat.exists
+  when: in_vagrant is defined
   register: partition
   become: True
 
 #- name: resize new partition
 #  command: parted /dev/sda resizepart 4 99%
-#  when: vagrant_dir.stat.exists
+#  when: in_vagrant is defined
 #  become: True
 
 - name: get disk info
@@ -67,13 +64,13 @@
     device: /dev/sda
     unit: MiB
   register: sda_info
-  when: vagrant_dir.stat.exists
+  when: in_vagrant is defined
   become: True
 
 
 - name: create pool if fstype of 4th partition is not zfs
   command: zpool create -f -o ashift=12 -O atime=off -O dedup=off -O compression=lz4 -O normalization=formD tank /dev/sda4
-  when: partition.changed and sda_info.partitions.3.fstype != "zfs" and vagrant_dir.stat.exists
+  when: partition.changed and sda_info.partitions.3.fstype != "zfs" and in_vagrant is defined
   register: pool
   become: True
 
@@ -81,7 +78,7 @@
 - name: add dataset lxd
   command: zfs create tank/lxd
   become: True
-  when: vagrant_dir.stat.exists
+  when: in_vagrant is defined
   ignore_errors: True
 
 
@@ -91,7 +88,7 @@
 # new ZFS Pool: Status 201
 # TODO dev description
 - name: Adding existing ZFS Dataset to LXD config on production system (pool/dataset must be created manually)
-  when: lxd_pool_check.status == 404 #and not vagrant_dir.stat.exists
+  when: lxd_pool_check.status == 404 #and not in_vagrant
   uri:
     url: "https://127.0.0.1:8443/1.0/storage-pools"
     method: POST

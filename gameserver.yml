@@ -28,17 +28,9 @@
 
 - hosts: web
   tasks:
-
     - user:
         name: ctf
       become: True
-
-    - name: Check if running in vagrant (development system)
-      stat: path=/vagrant
-      register: vagrant_dir
-
-
-
 
     - name: set timezone to UTC
       timezone:
@@ -53,27 +45,44 @@
         src: ./
         dest: /srv/ctf
         use_ssh_args: yes
-      when: vagrant_dir.stat.exists == False
+      when: in_vagrant is not defined
       become: yes
+
+- hosts: ctfserver
+  tasks:
 
     - name: configure lxd to mount vagrant dir for development (subuid file)
       lineinfile:
         path: /etc/subuid
         line: "root:1000:1"
-      when: vagrant_dir.stat.exists
+      when: in_vagrant is defined
       become: yes
 
     - name: configure lxd to mount vagrant dir for development (subgid file)
       lineinfile:
         path: /etc/subgid
         line: "root:1000:1"
-      when: vagrant_dir.stat.exists
+      when: in_vagrant is defined
       become: yes
 
     - name: configure lxd to mount vagrant dir for development (raw.idmap)
       command: lxc config set web raw.idmap "both 1000 1001"
-      when: vagrant_dir.stat.exists
+      when: in_vagrant is defined
       become: yes
+
+    - name: restart webcontainer
+      command: lxc restart web
+      when: in_vagrant is defined
+      become: yes
+
+    - name: configure lxd to mount vagrant dir for development (bind mount)
+      command: lxc config device add web vagrant disk source=/vagrant path=/srv/ctf
+      when: in_vagrant is defined
+      ignore_errors: yes
+      become: yes
+
+- hosts: web
+  tasks:
 
     - name: Create a symbolic link
       file:

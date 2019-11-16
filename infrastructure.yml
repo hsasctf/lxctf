@@ -11,10 +11,6 @@
 - hosts: ctfserver
   tasks:
 
-    - name: Check if running in vagrant (development system)
-      stat: path=/vagrant
-      register: vagrant_dir
-
 
     - name: install ufw
       apt:

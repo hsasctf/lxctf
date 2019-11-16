@@ -77,7 +77,7 @@ EOF
     1. in SSH run `lxc list` for a list of containers
     1. Ignore this message from LXD: "If this is your first time using LXD, you should also run: lxd init"
     1. `lxc exec NAME bash` for opening (root) bash in containers
-1. run `lxc exec web bash` for starting a shell in the gameserver container *web*. Gameserver code is mounted from Vagrant folder to container `web`.
+1. run `lxc exec web bash` for starting a shell in the gameserver container *web*. Gameserver code is mounted from Vagrant folder to container `web` in path `/srv/ctf`.
     tmux is the recommended tool to run all gameserver services for development
     
     - to exit tmux use CTRL+b then d

@@ -72,6 +72,9 @@ Vagrant.configure("2") do |config|
               ansible.limit          = "all"
               ansible.inventory_path = "inventories/vagrant_#{provider}"
               ansible.verbose        = ""
+              ansible.extra_vars = {
+                  in_vagrant: true
+              }
         end
     end
 

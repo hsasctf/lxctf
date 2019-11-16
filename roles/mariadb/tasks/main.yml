@@ -177,9 +177,9 @@
 - name: create db model if no dump exists
   shell: python3 db/database.py
   args:
-    chdir: /vagrant/ctfdbapi/
+    chdir: /srv/ctf/ctfdbapi/
   environment:
-    PYTHONPATH: "/vagrant/ctfdbapi/"
+    PYTHONPATH: "/srv/ctf/ctfdbapi/"
   when: db_created.changed and not dump_file.stat.exists
   become: yes
 
