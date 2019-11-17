@@ -165,8 +165,7 @@ if __name__ == "__main__":
         combine_service_infos()
         create_all_services_and_scripts()
 
-        logger.info("Now Login to dashboard (for teams) at http://10.38.1.1:5000")
-        logger.info("(Login as a team using admin password -> user: TEAMNAME-admin pw: from ctfdbapi/config.py)")
+        logger.info("Now Login to dashboard (for teams) with VPN at http://10.38.1.1:5000")
         logger.info("Starting admin interface at http://10.38.1.1:4999/admin/")
         logger.info("Login using credentials in ctfdbapi/config.py")
         from config import ADMIN_CREDENTIALS
