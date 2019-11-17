@@ -1,3 +1,5 @@
+from functools import wraps
+
 from sqlalchemy import func
 
 from flask_httpauth import HTTPBasicAuth
@@ -9,11 +11,12 @@ from flask import Flask, session, request, flash, url_for, redirect, render_temp
 from db.database import db_session
 from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
     Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
+from app.api import verify_flag
 
 from hashlib import sha512
 
 import redis
-import requests
+import ipaddress
 
 web = Blueprint('web', __name__,
                 template_folder='templates')
@@ -22,95 +25,60 @@ auth = HTTPBasicAuth()
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 
-def get_attacking_team():
-    team = Team.query.filter(func.lower(Team.team_name) == func.lower(get_real_username(auth.username()))).first()
-    event = Event.query.order_by(Event.id.desc()).first()
-    attacking_team = AttendingTeam.query.filter_by(team=team, event=event).first()
-    return attacking_team
+def get_team_num(ip):
+    request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+
+def find_team(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        try:
+            a, b, c, d = [int(x) for x in ip.split(".")]
+            assert a == 10
+            assert b in [40, 41, 42, 43]
+            event = Event.query.order_by(Event.id.desc()).first()
+            ateam = AttendingTeam.query.filter_by(subnet=c, event=event).one_or_none()
+            team = ateam.team if ateam is not None else None
+            if not team:
+                return redirect(url_for('web.error'))
+            kwargs['team'] = team
+            kwargs['ateam'] = ateam
+        except Exception as e:
+            return redirect(url_for('error'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
-@auth.get_password
-def get_password(username):
-    event = Event.query.order_by(Event.id.desc()).first()
+@web.route("/error")
+def error():
+    return "ERROR, are you connected to VPN or are in the correct subnet?"
 
-    try_split = username.rsplit("-", 1)
-    if len(try_split) == 2:
-        if try_split[1] == "admin":
-            real_username = try_split[0]
-            team = Team.query.filter(func.lower(Team.team_name) == func.lower(real_username)).first()
-
-            if AttendingTeam.query.filter_by(team=team, event=event).first():
-                db_session.remove()
-                return current_app.config["ADMIN_CREDENTIALS"][1]
-            else:
-                db_session.remove()
-                return None
-    team = Team.query.filter(func.lower(Team.team_name) == func.lower(username)).first()
-
-    # only attending teams can login
-    if not AttendingTeam.query.filter_by(team=team, event=event).first():
-        return None
-
-    db_session.remove()
-    return team.password
-
-
-@auth.hash_password
-def hash_password(username, password):
-    event = Event.query.order_by(Event.id.desc()).first()
-
-    try_split = username.rsplit("-", 1)
-    if len(try_split) == 2:
-        if try_split[1] == "admin":
-            real_username = try_split[0]
-            team = Team.query.filter(func.lower(Team.team_name) == func.lower(real_username)).first()
-
-            if AttendingTeam.query.filter_by(team=team, event=event).first():
-                db_session.remove()
-                return current_app.config["ADMIN_CREDENTIALS"][1]
-            else:
-                db_session.remove()
-                return None
-
-    team = Team.query.filter(func.lower(Team.team_name) == func.lower(username)).first()
-    if not AttendingTeam.query.filter_by(team=team, event=event).first():
-        return None
-
-    db_session.remove()
-    pw_salt = "{}{}".format(password, team.password_salt)
-    return sha512(pw_salt.encode("utf8")).hexdigest()
-
-
-def get_real_username(username):
-    """allows admins to login as TEAMNAME-admin instead of TEAMNAME but with admin password"""
-    try_split = username.rsplit("-", 1)
-    if len(try_split) == 2:
-        if try_split[1] == "admin":
-            real_username = try_split[0]
-            return real_username
-
-    return username
 
 
 @web.route("/")
-@auth.login_required
-def index():
+@find_team
+def index(team=None, ateam=None):
     return render_template('index.html')
 
 
 @web.route('/config')
-@auth.login_required
-def get_config():
-    return jsonify({'ctf_name': current_app.config["CTF_NAME"], 'team_name': get_real_username(auth.username())})
+@find_team
+def get_config(team=None, ateam=None):
+    team_name = "UNKNOWN"
+    try:
+        team_name = team.team_name
+    except AttributeError:
+        pass
+    finally:
+        return jsonify({'ctf_name': current_app.config["CTF_NAME"], 'team_name': team_name})
 
 
-from app.api import verify_flag
 
 
 @web.route('/flag', methods=['POST'])
-@auth.login_required
-def submit_flag():
-    attacking_team = get_attacking_team()
+@find_team
+def submit_flag(team=None, ateam=None):
+    attacking_team = ateam
 
     return verify_flag(int(attacking_team.id), request.get_json()['flag'])
 
@@ -121,27 +89,26 @@ def get_scores():
 
 
 @web.route('/services')
-@auth.login_required
-def get_services():
+@find_team
+def get_services(team=None, ateam=None):
     return redis_client.get('ctf_services')
 
 
 @web.route('/jeopardies')
-@auth.login_required
-def get_jeopardies():
+@find_team
+def get_jeopardies(team=None, ateam=None):
     return redis_client.get('ctf_jeopardy_list')
 
 
 @web.route('/services_status')
-@auth.login_required
-def get_services_status():
+@find_team
+def get_services_status(team=None, ateam=None):
     status = json.loads(redis_client.get('ctf_services_status'))
     result = {}
 
-    team = get_attacking_team()
 
     for state in status:
-        if state['team_id'] == team.id:
+        if state['team_id'] == ateam.id:
             for entry in state['services']:
                 result[entry['service_id']] = entry['state']
 
@@ -152,8 +119,3 @@ def get_services_status():
 @web.route('/tick_change_time')
 def get_tick_duration():
     return redis_client.get('ctf_tick_change_time')
-
-
-@web.route('/logout')
-def logout():
-    return ('Logout', 401, {'WWW-Authenticate': 'Basic realm="Login required"'})

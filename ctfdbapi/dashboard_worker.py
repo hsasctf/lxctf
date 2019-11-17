@@ -86,7 +86,7 @@ class RedisUpdater(object):
                             'team_id': attending_team_id,
                             'flag_id': flag_ids[attending_team_id][str(service_id)],
                         } for attending_team_id in
-                        dict(list(filter(lambda kv: str(service_id) in kv[1], flag_ids.items())))  # TODO TEST THIS!!
+                        dict(list(filter(lambda kv: str(service_id) in kv[1], flag_ids.items())))
                     ]
                 }
 

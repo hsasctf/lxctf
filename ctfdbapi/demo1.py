@@ -28,6 +28,9 @@ logger.setLevel(logging.DEBUG)
 
 def delete_prev_demos():
     Event.query.filter_by(is_demo=1).delete()
+    Team.query.filter_by(team_name="test1").delete()
+    Team.query.filter_by(team_name="test2").delete()
+    Team.query.filter_by(team_name="test3").delete()
     db_session.commit()
 
 
@@ -170,7 +173,6 @@ if __name__ == "__main__":
         from urllib.parse import quote
 
         logger.info("-----")
-        logger.warning("Firefox recommended")
         logger.info(
             "or login as Admin using this URL: http://{}@10.38.1.1:4999/admin/".format(':'.join(ADMIN_CREDENTIALS)))
         logger.info("-----")

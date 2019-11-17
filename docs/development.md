@@ -105,7 +105,7 @@ EOF
 
 
 1. connect (from host) to openvpn using `openvpn --config roles/vpn/files/client_configs/client-teamXXX.ovpn`
-1. http://10.38.1.1:5000/ (Login for CTF teams with flag input, scores, jeopardies). Login as team without knowing the (hashed) password: Username: TEAMNAME-admin (example: mtga-admin) Password: *defined in ctfdbapi/config.py*
+1. http://10.38.1.1:5000/ (Webapp for CTF teams with flag input, scores).
 1. The containers have the timezone UTC, so Attack&Defense Start timestamp must be specified in UTC in the database
 1. Admin interface http://10.38.1.1:4999/admin (use password from ctfdbapi/config.py)
 
