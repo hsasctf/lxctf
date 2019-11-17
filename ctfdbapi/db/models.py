@@ -94,10 +94,6 @@ class Team(ModelBase, UserMixin):
     def check_password(self, password):
         return self.password == sha512("{}{}".format(password, self.password_salt).encode("utf8")).hexdigest()
 
-    @hybrid_property
-    def current_attending_team(self):
-        return self.participations.order_by(AttendingTeam.id.desc()).first()
-
     def __str__(self):
         return "{}".format(self.team_name)  # used for password reset! do not change
 
@@ -211,7 +207,7 @@ class Submission(ModelBase):
     flag = relationship('Flag',
                         backref=backref('submissions', cascade="all, delete-orphan", lazy='dynamic'))
 
-    # should be None/NULL when no matching flag could be found
+    # TODO should be None/NULL when no matching flag could be found
     submitted_string = Column(String(128), nullable=False)
 
     def __str__(self):

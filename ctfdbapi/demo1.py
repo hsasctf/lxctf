@@ -28,6 +28,9 @@ logger.setLevel(logging.DEBUG)
 
 def delete_prev_demos():
     Event.query.filter_by(is_demo=1).delete()
+    Team.query.filter_by(team_name="test1").delete()
+    Team.query.filter_by(team_name="test2").delete()
+    Team.query.filter_by(team_name="test3").delete()
     db_session.commit()
 
 
