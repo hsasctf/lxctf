@@ -5,9 +5,12 @@ sudo chmod 0600 /vagrant/sshkey/id_rsa_ctf
 SCRIPT
 
 $script_controller = <<-SCRIPT
+sudo apt-get --yes install python3-yaml
 sudo ansible-galaxy install -r /vagrant/requirements.yml --force
 sudo chmod o-w /vagrant/ansible
 sudo chmod o-w /vagrant
+sudo chmod +x /vagrant/inventories/ctf.py
+sudo chmod +x /vagrant/inventories/ctf_local.py
 SCRIPT
 
 
@@ -70,7 +73,8 @@ Vagrant.configure("2") do |config|
               ansible.config_file = "ansible/ansible.cfg"
               ansible.verbose        = true
               ansible.limit          = "all"
-              ansible.inventory_path = "inventories/vagrant_#{provider}"
+              #ansible.inventory_path = "inventories/vagrant_#{provider}"
+              ansible.inventory_path = "inventories/ctf.py"
               ansible.verbose        = ""
               ansible.extra_vars = {
                   in_vagrant: true

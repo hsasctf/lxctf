@@ -8,6 +8,7 @@ An Ansible project to automate installation and configuration of an Attack/Defen
 git clone URL
 git submodule init
 git submodule update
+./reinit_project.sh
 vagrant up
 vagrant provision
 ```

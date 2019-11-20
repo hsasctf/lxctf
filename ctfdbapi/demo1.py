@@ -165,7 +165,7 @@ if __name__ == "__main__":
         combine_service_infos()
         create_all_services_and_scripts()
 
-        logger.info("Now Login to dashboard (for teams) with VPN at http://10.38.1.1:5000")
+        logger.info("Now open dashboard (when in VPN) at http://10.38.1.1:5000")
         logger.info("Starting admin interface at http://10.38.1.1:4999/admin/")
         logger.info("Login using credentials in ctfdbapi/config.py")
         from config import ADMIN_CREDENTIALS
@@ -175,14 +175,7 @@ if __name__ == "__main__":
         logger.info(
             "or login as Admin using this URL: http://{}@10.38.1.1:4999/admin/".format(':'.join(ADMIN_CREDENTIALS)))
         logger.info("-----")
-        logger.info("=====")
-        for t in teams + [test_team, ]:
-            turl = "http://{}@10.38.1.1:5000".format(
-                quote(t.team_name + "-admin") + ":" + quote(ADMIN_CREDENTIALS[1]))
-            logger.info("Login as {} (only for demo purpose) -> {}".format(t.team_name,
-                                                                           turl
-                                                                           ))
-        logger.info("=====")
+
 
         logger.info("Start gamebot?")
         input()

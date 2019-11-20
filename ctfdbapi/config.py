@@ -1,24 +1,21 @@
 # Statement for enabling the development environment
+import yaml
+
 DEBUG = True
 
 # Define the application directory
 import os
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-ADMIN_CREDENTIALS = ('admin', 'z1zIfR9UcQhJ0xlA')
-API_SECRET = "rUCkG9QXSpsXj54FkXFFaZa4vBJtDgl2tHD1Hckg"
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+GLOBAL_CONFIG_PATH = os.path.join(BASE_PATH, "..", "inventories", "ctf_config.yml")
+with open(GLOBAL_CONFIG_PATH, 'r') as stream:
+    GLOBAL_CONFIG = yaml.safe_load(stream)
 
 
-# Define the database - we are working with
-# SQLite for this example
-#SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'dev.db')
+ADMIN_CREDENTIALS = ('admin', GLOBAL_CONFIG['dashboard_admin_password'])
+API_SECRET = GLOBAL_CONFIG['api_secret']
 
-# local
-#SQLALCHEMY_DATABASE_URI = 'mysql://root:bang2gah7mae0wiegaekooleihe2yeecie8aNee2@localhost/ctf2'
-
-#prod
-#SQLALCHEMY_DATABASE_URI = 'mysql://ctf:jFOuTTlAfDgswD2r010SkEBT7iKfIwU7Z8jUN3Ya@10.38.1.2/ctf'
-SQLALCHEMY_DATABASE_URI = 'mysql://ctf:tY61YwXoqXNInjBe1MVAi+z3iZt0NUYD7d9Npk2/oLk=@127.0.0.1/ctf'
+SQLALCHEMY_DATABASE_URI = 'mysql://ctf:{}@127.0.0.1/ctf'.format(GLOBAL_CONFIG['db_ctf_password'])
 
 
 DATABASE_CONNECT_OPTIONS = {}
@@ -40,11 +37,8 @@ CSRF_ENABLED     = False
 SECRET_KEY = "ZBiSD2ZGPhbtFS52u3caUNgrZ8dv7CtS7q2E30e3"
 
 
-SQLALCHEMY_ECHO = True
-
-
+SQLALCHEMY_ECHO = False
 JSON_SORT_KEYS = False
-
 TESTING = False # set to True FIXME
 LOGIN_DISABLED = False
 
