@@ -30,15 +30,16 @@ reboot needed
 
 ## Install ctf infrastructure
 
-Clone repo
+1. Clone repo
 
 ```bash
 sudo apt-get --yes install python3-yaml
 sudo ansible-galaxy install -r requirements.yml 
 sudo apt install python-pip
 sudo pip install ansible
-sudo ansible-playbook -i inventories/local site.yml
+sudo ansible-playbook -i inventories/ctf.py site.yml
 lxc config set web limits.cpu.priority 9
 lxc config set web limits.cpu 4
 ```
 
+set `team_count` in `inventories/ctf_config.yml` to correct number of teams and rerun the `ansible-playbook` command.
