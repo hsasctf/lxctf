@@ -26,20 +26,10 @@ DATABASE_CONNECT_OPTIONS = {}
 # operations using the other.
 THREADS_PER_PAGE = 2
 
-# Enable protection agains *Cross-site Request Forgery (CSRF)*
-CSRF_ENABLED     = False
-
-# Use a secure, unique and absolutely secret key for
-# signing the data.
-#CSRF_SESSION_KEY = "yOlod49ZuasFLDgila6Zv72XK9z0gWr9YCvceklKzfDkbM87zO"
-
-# Secret key for signing cookies
-SECRET_KEY = "ZBiSD2ZGPhbtFS52u3caUNgrZ8dv7CtS7q2E30e3"
-
 
 SQLALCHEMY_ECHO = False
 JSON_SORT_KEYS = False
-TESTING = False # set to True FIXME
+TESTING = False  # set to True FIXME
 LOGIN_DISABLED = False
 
 
