@@ -10,7 +10,6 @@ sudo ansible-galaxy install -r /vagrant/requirements.yml --force
 sudo chmod o-w /vagrant/ansible
 sudo chmod o-w /vagrant
 sudo chmod +x /vagrant/inventories/ctf.py
-sudo chmod +x /vagrant/inventories/ctf_local.py
 SCRIPT
 
 
