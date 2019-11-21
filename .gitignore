@@ -1,3 +1,5 @@
+inventories/ctf_config.yml
+
 vagrant_ctfdev_config.local.yml
 scorebot/team_list.json
 ctfdbapi/combined_info.json
