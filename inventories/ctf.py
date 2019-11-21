@@ -105,6 +105,7 @@ class CtfInventory(object):
 
         print(json.dumps(self.inventory))
 
+
     # Example inventory for testing.
     def ctf_inventory(self):
         return {
@@ -113,7 +114,7 @@ class CtfInventory(object):
                     "172.16.17.10" if IS_DEV else "127.0.0.1": {
                         "ansible_connection": "ssh",
                         "ansible_ssh_port": 22,
-                        "ansible_ssh_private_key_file": "/vagrant/.vagrant/machines/ctfserver/libvirt/private_key",
+                        "ansible_ssh_private_key_file": "/vagrant/.vagrant/machines/ctfserver/{}/private_key".format(CTFDEV_CONFIG['provider']),
                         "ansible_ssh_user": "vagrant",
                         "lxd_proxy_host": "127.0.0.1:8445",
                         "lxd_trust_pw": GLOBAL_CONFIG['lxd_trust_pw'],
@@ -126,7 +127,7 @@ class CtfInventory(object):
                     "jeop1": {
                         "ansible_connection": "ssh",
                         "ansible_host": "10.39.1.1",
-                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/libvirt/private_key -W %h:%p -q vagrant@172.16.17.10\"",
+                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/{}/private_key -W %h:%p -q vagrant@172.16.17.10\"".format(CTFDEV_CONFIG['provider']),
                         "ansible_ssh_private_key_file": "" if not IS_DEV else "/vagrant/sshkey/id_rsa_ctf",
                         "ansible_ssh_user": "ubuntu",
                         "jeop_num": 1
@@ -136,7 +137,7 @@ class CtfInventory(object):
                         "team{}".format(i): {
                             "ansible_connection": "ssh",
                             "ansible_host": "10.40.{}.1".format(i),
-                            "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/libvirt/private_key -W %h:%p -q vagrant@172.16.17.10\"",
+                            "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/{}/private_key -W %h:%p -q vagrant@172.16.17.10\"".format(CTFDEV_CONFIG['provider']),
                             "ansible_ssh_private_key_file": "" if not IS_DEV else "/vagrant/sshkey/id_rsa_ctf",
                             "ansible_ssh_user": "ubuntu",
                             "team_num": i,
@@ -146,7 +147,7 @@ class CtfInventory(object):
                     "web": {
                         "ansible_connection": "ssh",
                         "ansible_host": "10.38.1.1",
-                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/libvirt/private_key -W %h:%p -q vagrant@172.16.17.10\"",
+                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/{}/private_key -W %h:%p -q vagrant@172.16.17.10\"".format(CTFDEV_CONFIG['provider']),
                         "ansible_ssh_private_key_file": "" if not IS_DEV else "/vagrant/sshkey/id_rsa_ctf",
                         "ansible_ssh_user": "ubuntu",
                         "mysql_ctf_password": GLOBAL_CONFIG['mysql_ctf_password'],
