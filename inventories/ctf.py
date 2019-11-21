@@ -15,10 +15,6 @@ import yaml
 
 import os
 
-with open("/tmp/env", "w") as fp:
-    for param in os.environ.keys():
-        fp.write("%20s %s\n" % (param, os.environ[param]))
-
 try:
     import json
 except ImportError:
