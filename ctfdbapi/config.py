@@ -15,7 +15,7 @@ with open(GLOBAL_CONFIG_PATH, 'r') as stream:
 ADMIN_CREDENTIALS = ('admin', GLOBAL_CONFIG['dashboard_admin_password'])
 API_SECRET = GLOBAL_CONFIG['api_secret']
 
-SQLALCHEMY_DATABASE_URI = 'mysql://ctf:{}@127.0.0.1/ctf'.format(GLOBAL_CONFIG['db_ctf_password'])
+SQLALCHEMY_DATABASE_URI = 'mysql://ctf:{}@127.0.0.1/ctf'.format(GLOBAL_CONFIG['mysql_ctf_password'])
 
 
 DATABASE_CONNECT_OPTIONS = {}

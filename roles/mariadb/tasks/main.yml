@@ -43,7 +43,7 @@
     - mysql
 
 
-
+- debug: msg="{{ mysql_root_password }}"
 # secure installation tasks
 
 - name: update mysql root password for all root accounts
@@ -54,7 +54,7 @@
     password: "{{ mysql_root_password }}"
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    check_implicit_admin: yes
+    check_implicit_admin: no
     priv: "*.*:ALL,GRANT"
   with_items:
     - localhost
@@ -73,7 +73,7 @@
     state: "absent"
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    check_implicit_admin: yes
+    check_implicit_admin: no
   become: True
   with_items:
     - localhost
@@ -90,7 +90,7 @@
     host_all: yes
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    check_implicit_admin: yes
+    check_implicit_admin: no
   become: True
 
 
@@ -125,7 +125,7 @@
     state: absent
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    check_implicit_admin: yes
+    check_implicit_admin: no
   become: True
   
 
@@ -139,7 +139,7 @@
     state: present
     login_user: root
     login_password: "{{ mysql_root_password }}"
-    check_implicit_admin: yes
+    check_implicit_admin: no
   become: True
 
 
