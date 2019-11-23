@@ -1,7 +1,8 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+VPN server that will be installed for connecting the participant to the attackable machines.
+For now ansible creates both openvpn and wireguard configurations. Details on the setup can be found under docs/vpn-wireguard and docs/vpn-openvpn 
 
 Requirements
 ------------
