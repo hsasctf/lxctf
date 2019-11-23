@@ -17,7 +17,7 @@
 - name: allow wireguard ports
   ufw:
     rule: allow
-    port: 40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
+    port: 42{{ '%03d'|format(hostvars[item]['team_num']|int) }}
     proto: udp
   become: True
   with_items:
@@ -27,7 +27,7 @@
 - name: allow wireguard ports
   ufw:
     rule: allow
-    port: 40254
+    port: 42254
     proto: udp
   become: True
   delegate_to: 127.0.0.1

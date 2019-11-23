@@ -15,7 +15,7 @@
 - name: allow openvpn ports
   ufw:
     rule: allow
-    port: 40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
+    port: 41{{ '%03d'|format(hostvars[item]['team_num']|int) }}
     proto: udp
   become: True
   with_items:
@@ -24,7 +24,7 @@
 - name: allow openvpn ports
   ufw:
     rule: allow
-    port: 40254
+    port: 41254
     proto: udp
   become: True
 
