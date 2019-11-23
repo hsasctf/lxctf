@@ -6,4 +6,4 @@ DNS = 10.40.0.1
 [Peer]
 PublicKey =  {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-server }}
 AllowedIPs = 10.42.0.1/32{% for item in {{groups['ad_containers']}} %}, 10.40.{{ item|replace('team','')|int }}.1/32{% endfor %}
-Endpoint = 141.87.8.20:40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
+Endpoint = 141.87.8.20:42{{ '%03d'|format(hostvars[item]['team_num']|int) }}
