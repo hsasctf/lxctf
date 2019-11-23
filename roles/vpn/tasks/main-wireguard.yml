@@ -1,0 +1,275 @@
+---
+# tasks file for vpn
+# 
+# not idempotent!
+
+
+- name: install dependencies
+  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
+  become: True
+  delegate_to: 127.0.0.1
+
+# - name: install dependencies
+#   apt: name=daemontools-run state=latest
+#   become: True
+#   delegate_to: 127.0.0.1
+
+- name: allow wireguard ports
+  ufw:
+    rule: allow
+    port: 40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
+    proto: udp
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+  delegate_to: 127.0.0.1
+
+- name: allow wireguard ports
+  ufw:
+    rule: allow
+    port: 40254
+    proto: udp
+  become: True
+  delegate_to: 127.0.0.1
+
+- name: add wireguard to ppa
+  command: sudo add-apt-repository ppa:wireguard/wireguard
+  delegate_to: 127.0.0.1
+
+- name: apt-get update
+  apt: update_cache=yes
+  delegate_to: 127.0.0.1
+
+- name: install wireguard-tools and kernel modules
+  apt: name={{ item }} state=present
+  with-items:
+    - wireguard-tools
+    - wireguard-dkms
+  delegate_to: 127.0.0.1
+
+- name: create wireguard directory
+  file:
+    path: "/etc/wireguard/"
+    state: directory
+    args:
+      creates: /etc/wireguard/
+  delegate_to: 127.0.0.1
+
+- name: create wireguard_tmp directory
+  file:
+    path: "{{ role_path }}/files/wireguard_tmp"
+    state: directory
+  delegate_to: 127.0.0.1
+
+
+
+## Create the wireguard keys
+## Num members is hardcoded here. Change if you have time.
+
+# create the client keys for each first group member
+- name: create client keys round (1)
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }}-player-1 | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-1
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create client keys round (2)
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }}-player-2 | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-2
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create client keys round (3)
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }}-player-3 | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-3
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create client keys round (4)
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }}-player-4 | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-4
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create client keys round (5)
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }}-player-5 | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-5
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+- name: create keys for server
+  tasks:
+  - shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }} | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}
+    with_items:
+    - server
+  delegate_to: 127.0.0.1
+
+
+#----- render config templates -----
+
+- name: create client_configs directory
+  file:
+    path: "{{ role_path }}/files/client_configs"
+    state: directory
+  delegate_to: 127.0.0.1
+
+- name: create server_configs directory
+  file:
+    path: "{{ role_path }}/files/server_configs"
+    state: directory
+  delegate_to: 127.0.0.1
+
+
+# Generating the clientconfigs is hardcoded. Fix if possible.
+- name: generate wireguard for client (1)
+  template: src=wireguard/client1.wireguard.j2 dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+- name: generate wireguard for client (2)
+  template: src=wireguard/client2.wireguard.j2 dest={{ role_path }}/files/client_configs/wg2-{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+- name: generate wireguard for client (3)
+  template: src=wireguard/client3.wireguard.j2 dest={{ role_path }}/files/client_configs/wg3-{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+- name: generate wireguard for client (4)
+  template: src=wireguard/client4.wireguard.j2 dest={{ role_path }}/files/client_configs/wg4-{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+- name: generate wireguard for client (5)
+  template: src=wireguard/client5.wireguard.j2 dest={{ role_path }}/files/client_configs/wg5-{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+# Server config
+- name: generate wireguard configs for server
+  template: src=wireguard/server.conf.j2 dest={{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+# Client configs
+- name: create a vpn client config dir for each team
+  file:
+    path: "{{ role_path }}/files/client_configs/{{ item }}"
+    state: directory
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+## Move the client configs
+# Hardcoded teammembers. Change if possible.
+- name: Copy files for client configs (1)
+  copy: remote_src=True src="dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item }}/wg1.conf"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+  delegate_to: 127.0.0.1
+
+- name: Copy files for client configs (2)
+  copy: remote_src=True src="dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item }}/wg2.conf"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+  delegate_to: 127.0.0.1
+
+- name: Copy files for client configs (3)
+  copy: remote_src=True src="dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item }}/wg3.conf"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+  delegate_to: 127.0.0.1
+
+- name: Copy files for client configs (4)
+  copy: remote_src=True src="dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item }}/wg4.conf"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+  delegate_to: 127.0.0.1
+
+- name: Copy files for client configs (5)
+  copy: remote_src=True src="dest={{ role_path }}/files/client_configs/wg1-{{ item|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item }}/wg5.conf"
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - always
+  delegate_to: 127.0.0.1
+  
+
+- name: Securing wireguard private keys (chmod)
+  tasks:
+  - shell: sudo chmod 600 {{ role_path }}/files/wireguard_tmp/privatekey-*
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+    - server
+  delegate_to: 127.0.0.1
+
+
+- name: Securing wireguard private keys (chown)
+  tasks:
+  - shell: sudo chown root:root {{ role_path }}/files/wireguard_tmp/privatekey-*
+    with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+    - server
+  delegate_to: 127.0.0.1
+
+
+- name: move serverconfigs to /etc/wireguard/
+  tasks:
+  - shell: mv {{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf /etc/wireguard/
+  with_items:
+   - "{{groups['ad_containers']}}"
+   - team254
+   delegate_to: 127.0.0.1
+
+#- name: start the wireguard interfaces
+#  tasks:
+#  - shell: sudo wg-quick up wg{{ item|replace('team','')|int }}
+#  with_items:
+#   - "{{groups['ad_containers']}}"
+#   - team254
+#   delegate_to: 127.0.0.1
