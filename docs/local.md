@@ -2,9 +2,7 @@
 
 ## Server OS
 
-Recommended OS is: Xubuntu/Lubuntu 16.04 Desktop 64 Bit
-
-
+Recommended (tested) OS is: Xubuntu/Lubuntu 16.04 Desktop 64 Bit
 
 # Root on ZFS
 
@@ -20,7 +18,6 @@ Instead of Root on ZFS it's also possible to have a partition formatted with ZFS
 Then just create the dataset `lxd` using `zfs create tank/lxd`.
 
 ## LXD Production setup
-
 
 https://github.com/lxc/lxd/blob/master/doc/production-setup.md
 
@@ -42,4 +39,4 @@ lxc config set web limits.cpu.priority 9
 lxc config set web limits.cpu 4
 ```
 
-set `team_count` in `inventories/ctf_config.yml` to correct number of teams and rerun the `ansible-playbook` command.
+set `team_count` in `inventories/ctf_config.yml` to correct number of teams and **rerun the `ansible-playbook` command.**

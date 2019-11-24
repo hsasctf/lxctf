@@ -19,7 +19,7 @@ Suspend then Resume: `vagrant suspend` -> `vagrant resume`
 
 Halt then Up: `vagrant halt` -> `vagrant up`
 
-SSH to VM: `vagrant ssh ctfserver` (or `gameserver` or `controller`)
+SSH to VM: `vagrant ssh ctfserver` (or `controller`)
 
 
 ### Setup development environment
@@ -107,13 +107,13 @@ EOF
 1. connect (from host) to openvpn using `openvpn --config roles/vpn/files/client_configs/client-teamXXX.ovpn`
 1. http://10.38.1.1:5000/ (Webapp for CTF teams with flag input, scores).
 1. The containers have the timezone UTC, so Attack&Defense Start timestamp must be specified in UTC in the database
-1. Admin interface http://10.38.1.1:4999/admin (use password from ctfdbapi/config.py)
+1. Admin interface http://10.38.1.1:4999/admin (username: `admin` password: value from `dashboard_admin_password` in `inventories/ctf_config.yml`)
 
 
 
 ## Gameserver VM
 
-/opt/scorebot_tmp/ -> run scorebot with python (python 2)
+/opt/scorebot/ -> run scorebot with python (python 2)
 
 /opt/ctfdbapi/tornoado_file.py -> DB API/Scoreboard (run with python3)
 
