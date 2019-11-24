@@ -55,7 +55,7 @@ def default_config():
         "lxd_trust_pw": generate_password(),
         "mysql_root_password": generate_password(),
         "mysql_ctf_password": generate_password(),
-        "team_count": 2,
+        "team_count": 3,
     }
 
 
