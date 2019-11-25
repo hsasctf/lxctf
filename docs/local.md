@@ -30,7 +30,7 @@ reboot needed
 1. Clone repo
 
 ```bash
-sudo apt-get --yes install python3-yaml
+sudo apt-get --yes install python3-yaml python-yaml
 sudo ansible-galaxy install -r requirements.yml 
 sudo apt install python-pip
 sudo pip install ansible
