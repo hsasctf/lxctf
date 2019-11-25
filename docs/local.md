@@ -30,13 +30,12 @@ reboot needed
 1. Clone repo
 
 ```bash
-sudo apt-get --yes install python3-yaml python-yaml
+sudo apt-get --yes install python3-yaml python-yaml python-pip
 sudo ansible-galaxy install -r requirements.yml 
-sudo apt install python-pip
 sudo pip install ansible==2.8.7
-sudo ansible-playbook -i inventories/ctf.py site.yml
+sudo ansible-playbook -i inventories/ctf.py --key-file <path to lxctf>/sshkey/id_rsa_ctf site.yml
 lxc config set web limits.cpu.priority 9
 lxc config set web limits.cpu 4
 ```
 
-set `team_count` in `inventories/ctf_config.yml` to correct number of teams and **rerun the `ansible-playbook` command.**
+set `team_count` in `inventories/ctf_config.yml` to correct number of teams and **rerun the `ansible-playbook` command untils there are no errrors**

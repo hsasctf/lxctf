@@ -113,7 +113,7 @@ class CtfInventory(object):
                     "172.16.17.10" if IS_DEV else "127.0.0.1": {
                         "ansible_connection": "ssh" if IS_DEV else "local",
                         "ansible_ssh_port": 22,
-                        "ansible_ssh_private_key_file": "/vagrant/.vagrant/machines/ctfserver/{}/private_key".format(CTFDEV_CONFIG['provider']),
+                        "ansible_ssh_private_key_file": "" if not IS_DEV else "/vagrant/.vagrant/machines/ctfserver/{}/private_key".format(CTFDEV_CONFIG['provider']),
                         "ansible_ssh_user": "vagrant",
                         "lxd_proxy_host": "127.0.0.1:8445",
                         "lxd_trust_pw": GLOBAL_CONFIG['lxd_trust_pw'],
