@@ -33,7 +33,7 @@ reboot needed
 sudo apt-get --yes install python3-yaml python-yaml
 sudo ansible-galaxy install -r requirements.yml 
 sudo apt install python-pip
-sudo pip install ansible
+sudo pip install ansible==2.8.7
 sudo ansible-playbook -i inventories/ctf.py site.yml
 lxc config set web limits.cpu.priority 9
 lxc config set web limits.cpu 4

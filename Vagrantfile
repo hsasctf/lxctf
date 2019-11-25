@@ -41,6 +41,8 @@ Vagrant.configure("2") do |config|
               ansible.limit          = "all"
               ansible.inventory_path = inventory
               ansible.verbose        = ""
+              ansible.install_mode   = "pip"
+              ansible.version        = "2.8.7"
               ansible.extra_vars = {
                   in_vagrant: true
               }
