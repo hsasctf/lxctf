@@ -156,8 +156,7 @@ class CtfInventory(object):
             },
             "ad_containers": {
                 "hosts": [
-                    "team1",
-                    "team2"
+                    *["team{}".format(i) for i in range(1, GLOBAL_CONFIG['team_count'] + 1)]
                 ]
             },
             "all": {
