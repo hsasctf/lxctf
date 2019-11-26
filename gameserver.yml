@@ -13,6 +13,8 @@
     - name: Install packages
       apt:
         name:
+          - python-yaml # needed for scorebot
+          - python3-yaml
           - redis-server
           - python3-cryptography
           - python3-pip

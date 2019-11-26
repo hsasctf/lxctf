@@ -12,9 +12,16 @@ import inspect
 import logging
 import copy
 
+import yaml
+
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+GLOBAL_CONFIG_PATH = os.path.join(BASE_PATH, "..", "inventories", "ctf_config.yml")
+with open(GLOBAL_CONFIG_PATH, 'r') as stream:
+    GLOBAL_CONFIG = yaml.safe_load(stream)
+
 DB_HOST = "127.0.0.1:5000/api/v01"
 
-DB_SECRET = "rUCkG9QXSpsXj54FkXFFaZa4vBJtDgl2tHD1Hckg" # API secret
+DB_SECRET = GLOBAL_CONFIG['api_secret'] # API secret
 
 SUDO = '/usr/bin/sudo'
 

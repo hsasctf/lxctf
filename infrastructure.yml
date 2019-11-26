@@ -6,8 +6,6 @@
     raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
     become: true
 
-
-
 - hosts: ctfserver
   tasks:
 

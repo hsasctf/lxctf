@@ -1,0 +1,30 @@
+---
+sudo: required
+dist: xenial
+language: python
+env:
+ - LINT=1
+ - IMAGE="ubuntu:xenial"
+script:
+  - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
+# setup dependencies here to save time on simpler test environments
+# wait for lxd socket to be ready after snap installation
+# sudo back to ourself to activate lxd group membership
+  - if [ ! -z ${IMAGE} ]; then
+      sudo apt remove -y --purge lxd lxd-client;
+      sudo apt install -y -t xenial-backports lxd;
+      sudo apt install -y zfsutils-linux;
+      sudo lxd activateifneeded;
+      sudo lxd waitready;
+      sudo fallocate -l 20G /tank.img;
+      sudo zpool create -O atime=off -O compression=lz4 tank /tank.img;
+      sudo zfs create tank/lxd;
+      sudo apt-get --yes install python3-yaml python-yaml python-pip;
+      sudo ansible-galaxy install -r requirements.yml;
+      sudo pip install ansible==2.8.7;
+      ./reinit_project.sh;
+      sudo ansible-playbook -i inventories/ctf.py site.yml;
+      sleep 180;
+      sudo ansible-playbook -i inventories/ctf.py site.yml;
+    fi
+
