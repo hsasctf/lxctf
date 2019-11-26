@@ -24,9 +24,9 @@ script:
       sudo pip install ansible==2.8.7;
       ./reinit_project.sh;
       sudo ansible-playbook -i /lxctf/inventories/ctf.py site.yml;
-      sleep 600;
+      sleep 300;
       sudo ansible-playbook -i /lxctf/inventories/ctf.py site.yml;
-      sleep 600;
+      sleep 300;
       sudo ansible-playbook -i /lxctf/inventories/ctf.py site.yml;
     fi
 
