@@ -42,9 +42,12 @@ Setflag:
 - script has to provide a `result()` method returning following dict:
 
     ```python
-    {'FLAG_ID': 'unique string chosen by setflag script',  
-    'TOKEN': 'something that needs to be passed to getflag scipt in order for it to work (type does not matter)',
-    'ERROR_MSG': 'string describing some error during script execution (may be empty)'}
+    {
+        'FLAG_ID': 'unique string chosen by setflag script',  
+        'TOKEN': 'something that needs to be passed to getflag scipt in order for it to work (type does not matter)',
+        'ERROR': 0, # int
+        'ERROR_MSG': 'string describing some error during script execution (may be empty)'
+    }
     ```
 
 Getflag:
@@ -53,11 +56,22 @@ Getflag:
 - script has to provide a `result()` method returning following dict:
 
     ```python
-    {'FLAG': 'the flag that is successfully retrived again by the interaction between script and service',  
-    'ERROR_MSG': 'string describing some error during script execution (may be empty)'}
+    {
+        'FLAG': 'the flag that is successfully retrived again by the interaction between script and service',
+        'ERROR': 0, # int
+        'ERROR_MSG': 'string describing some error during script execution (may be empty)'
+    }
     ```
 
-Examples for both scripts can be found in [examples folder](https://github.com/hsasctf/lxctf/tree/master/docs/examples/service_requirements)
+Error scores:
+
+Always return an error as integer
+
+- negative integer: Service is down
+- zero: Service is up und functional
+- Positive integer: Service is up and not functional
+
+Examples for both scripts can be found [here](https://github.com/hsasctf/lxctf/blob/master/services/2019/logserver/scripts/)
 
 ## OS
 
