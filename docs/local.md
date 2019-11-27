@@ -19,6 +19,8 @@ Then just create the dataset `lxd` using `zfs create tank/lxd`.
 
 ## LXD Production setup
 
+This step is important since the gameserver does tens of thousands of file operations.
+
 https://github.com/lxc/lxd/blob/master/doc/production-setup.md
 
 check syntax and reload `/sbin/sysctl -p`
