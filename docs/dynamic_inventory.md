@@ -16,3 +16,5 @@ For example you want to deploy a web app using mysql then you can set variables 
 ```
 
 First argument should be the name of the service, the second is how the key/password is used.
+
+Except for `team_count`, the file `ctf_config.yml` must not be changed.
