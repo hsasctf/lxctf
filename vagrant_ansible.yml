@@ -32,3 +32,9 @@
         path: /vagrant/inventories/ctf.py
         mode: '0777'
       become: yes
+
+    - name: permissions for sshkey
+      file:
+        path: /vagrant/sshkey/id_rsa_ctf
+        mode: '0600'
+      become: yes
