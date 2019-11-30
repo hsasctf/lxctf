@@ -1,6 +1,6 @@
 [Interface]
 PrivateKey = {{ lookup('file', role_path+'/files/wireguard_tmp/privatekey-server')}}
-Address = 10.42.0.1/24
+Address = 10.42.0.{{ item|replace('team','')|int }}/24
 PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE;
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o ens3 -j MASQUERADE;
 ListenPort = 42{{ '%03d'|format(hostvars[item]['team_num']|int) }}
