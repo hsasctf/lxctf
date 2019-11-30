@@ -46,7 +46,7 @@
       name: ad
       description: Profile for AD VMs
       config:
-        limits.memory: 2000MB
+        limits.memory: 2048MB
         limits.cpu: "1"
       devices:
         root:
@@ -147,7 +147,7 @@
         alias: "disco"
       config:
         limits.cpu: "1"
-        limits.memory: 2000MB
+        limits.memory: 2048MB
         #security.nesting: "true" #needed for docker
         user.network-config: |
           version: 1
