@@ -1,0 +1,196 @@
+---
+# tasks file for vpn
+# 
+# not idempotent!
+
+## Installation
+- name: install dependencies
+  apt: name=iptables state=present update_cache=yes cache_valid_time=3600
+  become: True
+  delegate_to: 127.0.0.1
+
+
+## Firewall configuration
+
+# Disable ipv6
+- name: disable ipv6 in the host kernel
+  shell: sudo sysctl net.ipv6.conf.all.disable_ipv6=1
+  delegate_to: 127.0.0.1
+
+# Flush the ruleset
+- name: iptables flush filter
+  iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+  become: yes
+  delegate_to: 127.0.0.1
+
+# Set the FORWARD policy to drop
+- name: Set the policy for the FORWARD chain to DROP
+  iptables:
+    chain: FORWARD
+    policy: DROP
+  become: yes
+  delegate_to: 127.0.0.1
+
+# Allow established and related
+- name: Allow related and established connections
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+  delegate_to: 127.0.0.1
+
+
+## Hardcoded teammembers (no necessarity to do otherwise --> each team could create own local subnets)
+# Teamcontainer
+- name: Teamcontainer allow new ssh conections
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5
+    dst_range: 10.40.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255
+    protocol: tcp
+    destination_port: 22
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+# Temcontainer service ports TCP
+- name: Teamcontainer allow new service conections (TCP)
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
+    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    protocol: tcp
+    destination_port: {{ item[1]|int }}
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+  delegate_to: 127.0.0.1
+
+
+# Temcontainer service ports TCP
+- name: Teamcontainer allow new service conections (TCP)
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
+    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    protocol: tcp
+    destination_port: {{ item[1]|int }}
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - team254
+    - "{{ service_ports }}"
+  delegate_to: 127.0.0.1
+
+
+# Teamcontainer service ports UDP
+- name: Teamcontainer allow new service conections (UDP from outside)
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
+    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    protocol: udp
+    destination_port: {{ item[1]|int }}
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+  delegate_to: 127.0.0.1
+
+
+# Teamcontainer service ports UDP
+- name: Teamcontainer allow new service conections (UDP from team254)
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
+    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    protocol: udp
+    destination_port: {{ item[1]|int }}
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - team254
+    - "{{ service_ports }}"
+  delegate_to: 127.0.0.1
+
+
+# Teamcontainer service ports UDP
+- name: Teamcontainer allow new service conections (UDP from inside)
+  iptables:
+    chain: FORWARD
+    src_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    dst_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
+    protocol: udp
+    jump: ACCEPT
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+# Jeopardy for each team
+- name: Jeopardy allow new ssh conections
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5
+    dst_range: 10.39.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255
+    protocol: tcp
+    destination_port: 22
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+# Gamebridge
+- name: allow everything for gamebr
+  iptables:
+    chain: FORWARD
+    src_range: 10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5
+    dst_range: 10.38.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255
+    jump: ACCEPT
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+# Enable ipv4 Forwarding
+- name: enable ipv4 forwarding
+  shell: sudo sysctl -w net.ipv4.ip_forward=1
+  delegate_to: 127.0.0.1
+
+
+# Start iptables
+# this can fail if ufw is not installed -- iptables is running nonetheless
+- name: Save iptables configuration to a file
+  shell: sudo systemctl enable --now iptables
+  delegate_to: 127.0.0.1
+
+
+# Save the configuration to a file
+- name: Save iptables configuration to a file
+  shell: sudo iptables-save > {{ role_path }}/files/iptables.fw
+  delegate_to: 127.0.0.1
