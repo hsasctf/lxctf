@@ -11,7 +11,6 @@
 
 
 ## Firewall configuration
-
 # Disable ipv6
 - name: disable ipv6 in the host kernel
   shell: sudo sysctl net.ipv6.conf.all.disable_ipv6=1
@@ -26,18 +25,41 @@
   become: yes
   delegate_to: 127.0.0.1
 
-# Set the FORWARD policy to drop
-- name: Set the policy for the FORWARD chain to DROP
-  iptables:
-    chain: FORWARD
-    policy: DROP
-  become: yes
-  delegate_to: 127.0.0.1
 
+
+## INPUT CHAIN
 # Allow established and related
 - name: Allow related and established connections
   iptables:
     chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+  delegate_to: 127.0.0.1
+  
+
+# SSH for maintainance
+- name: Host allow new ssh conections
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 22
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  delegate_to: 127.0.0.1
+
+
+
+## FORWARD CHAIN
+# Allow established and related
+- name: Allow related and established connections
+  iptables:
+    chain: FORWARD
     ctstate: ESTABLISHED,RELATED
     jump: ACCEPT
   become: yes
@@ -177,6 +199,28 @@
     - team254
   delegate_to: 127.0.0.1
 
+
+
+## DEFAULT RULES
+# Set the INPUT policy to reject
+- name: Set the policy for the FORWARD chain to REJECT
+  iptables:
+    chain: INPUT
+    policy: REJECT
+  become: yes
+  delegate_to: 127.0.0.1
+
+
+# Set the FORWARD policy to drop
+- name: Set the policy for the FORWARD chain to DROP
+  iptables:
+    chain: FORWARD
+    policy: DROP
+  become: yes
+  delegate_to: 127.0.0.1
+
+
+## Additional settings
 # Enable ipv4 Forwarding
 - name: enable ipv4 forwarding
   shell: sudo sysctl -w net.ipv4.ip_forward=1
