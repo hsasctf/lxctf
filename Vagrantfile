@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
         config.vm.provider "virtualbox"
     end
 
-    config.vm.box = "generic/ubuntu1910"
+    config.vm.box = "generic/ubuntu1604"
     
     ctf_ansi_provision = lambda do |playbook, inventory|
         config.vm.provision "ansible_local" do |ansible|
