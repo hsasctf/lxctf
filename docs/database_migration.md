@@ -5,7 +5,7 @@
 ## Autogenerate Migration file
 
 ```
-cd /vagrant/ctfdbapi
+cd /srv/ctf/ctfdbapi
 PYTHONPATH=. alembic revision --autogenerate
 ```
 
@@ -15,7 +15,7 @@ PYTHONPATH=. alembic revision --autogenerate
 
 
 ```
-cd /vagrant/ctfdbapi
+cd /srv/ctf/ctfdbapi
 PYTHONPATH=. alembic upgrade head
 ```
 
@@ -25,12 +25,12 @@ PYTHONPATH=. alembic upgrade head
 # How to run own scripts
 
 ```
-cd /vagrant/ctfdbapi
+cd /srv/ctf/ctfdbapi
 PYTHONPATH=. python3 db/<script>.py
 ``` 
 
 # Backup database to Ansible role  (in development environment)
 
 ```
-mysqldump -uroot -p ctf > /vagrant/roles/mariadb/ctf_dump.sql
+mysqldump -uroot -p ctf > /srv/ctf/roles/mariadb/ctf_dump.sql
 ```
