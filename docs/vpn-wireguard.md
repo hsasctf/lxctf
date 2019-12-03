@@ -22,8 +22,8 @@ Wireguard is a simple and lightweight vpn.
 
 ## Varaibles used in this readme
 
--   <team-id>, the id of the team taking part in the ctf
--   <player-num>, the number of players starting from one and counting to five. Unfourtunatly this is hardcoded.
+-   &lt;team-id&gt;, the id of the team taking part in the ctf
+-   &lt;player-num&gt;, the number of players starting from one and counting to five. Unfourtunatly this is hardcoded.
 
 
 <a id="org21fd0fc"></a>
@@ -43,10 +43,10 @@ The associated ansible script installes the following packages on the host:
 
 These ufw rules are created when the asible script is executed:
 
--   ufw allow 42<team-id>/udp
+-   ufw allow 42&lt;team-id&gt;/udp
 -   ufw allow 42254/udp
 
-Where the rule with <team-id> is added for each team and the ids are prefaced with zeros, so that the whole portnumber is five digits long.
+Where the rule with &lt;team-id&gt; is added for each team and the ids are prefaced with zeros, so that the whole portnumber is five digits long.
 
 
 <a id="org31859cc"></a>
@@ -57,10 +57,10 @@ Where the rule with <team-id> is added for each team and the ids are prefaced wi
 
 The following directories are created on the host in the context of the ansible directory:
 
--   files/wireguard<sub>tmp</sub>/
--   files/client<sub>configs</sub>/
--   files/server<sub>configs</sub>/
--   files/client<sub>configs</sub>/team<team-id>
+-   files/wireguard/tmp/
+-   files/client/configs/
+-   files/server/configs/
+-   files/client/configs/team&lt;team-id&gt;
 
 Teamfolders are created for each team.
 
@@ -71,7 +71,7 @@ Teamfolders are created for each team.
 
 A keypair is generated for teach player in the ctf (five per team), as well as five keys for team 254, the admin team and one keypair fore the server.
 
-These Keypairs are saved in /files/wireguard<sub>tmp</sub>/privatekey-<team-id>-player-<player-num> and files/wireguard<sub>tmp</sub>/publickey-<team-id>-player-<player-num> for each player. The Server keys are named /files/wireguard<sub>tmp</sub>/private-server and /files/wireguard<sub>tmp</sub>/publickey-server.
+These Keypairs are saved in /files/wireguard/tmp/privatekey-&lt;team-id&gt;-player-&lt;player-num&gt; and files/wireguard/tmp/publickey-&lt;team-id&gt;-player-&lt;player-num&gt; for each player. The Server keys are named /files/wireguard/tmp/private-server and /files/wireguard/tmp/publickey-server.
 
 
 <a id="org8b799f2"></a>
@@ -82,9 +82,9 @@ The configuaritonfiles for the wireguard-interfaces are located in *roles/vpn/te
 
 Before generating the serverconfigs it's necessary to check for the interface, were the server is listening on at /roles/vpn/templates/wireguard/server.conf.j2. The default interface name for applying the forwarding rules on is ens3.
 
-Configs are created for each player are saved to *files/client<sub>configs</sub>/wg1-<team-id>.conf with the prefix wg1- for player 1, wg2- for player two and so on. After that they are transferred to there team-directories in /files/client<sub>configs</sub>/<team-id>*
+Configs are created for each player are saved to \*files/client/configs/wg1-&lt;team-id&gt;.conf with the prefix wg1- for player 1, wg2- for player two and so on. After that they are transferred to there team-directories in /files/client/configs/&lt;team-id&gt;\*
 
-The serverconfigs are stored in /files/server<sub>configs</sub>/wg<team-id>.conf
+The serverconfigs are stored in /files/server/configs/wg&lt;team-id&gt;.conf
 
 
 <a id="org1dd0229"></a>
