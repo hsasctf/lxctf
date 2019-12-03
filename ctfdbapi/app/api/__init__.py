@@ -9,7 +9,7 @@ from jinja2 import TemplateNotFound
 from sqlalchemy import desc
 
 from db.database import db_session
-from db.models import AttendingTeam, Event, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
+from db.models import AttendingTeam, Event, Submission, Flag, Challenge, Member, User, Tick, \
     TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun, \
     TeamScore
 

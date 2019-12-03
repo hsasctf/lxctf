@@ -40,7 +40,7 @@ def not_found(error):
 
 
 
-from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
+from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, \
     Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 
 import flask_admin as admin
@@ -63,7 +63,7 @@ class ModelView(admin.contrib.sqla.ModelView):
 
 admin = admin.Admin(app, name='CTF-DB', template_mode='bootstrap3')
 [admin.add_view(ModelView(m, db_session)) for m in [
-    TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick,
+    TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Tick,
     TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 ]]
 

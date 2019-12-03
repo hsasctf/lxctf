@@ -5,7 +5,7 @@ from db.database import db_session
 
 
 from datetime import datetime, timedelta
-from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun, \
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun, \
     TeamScore, TeamServiceState
 
 
@@ -31,7 +31,7 @@ def update_test():
 def test_before_start_and_ad(step_minutes=5):
 
     # Delete all existing Rows
-    [model.query.delete() for model in [AttendingTeam, Event, Team, Submission, Flag, Challenge, Sla, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun]]
+    [model.query.delete() for model in [AttendingTeam, Event, Team, Submission, Flag, Challenge, Sla, Member, User, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun]]
     db_session.commit()
 
     event = Event()
@@ -118,7 +118,7 @@ def test_running_ad_game(until_end_minutes=60): # fixme correct time
 
     # Delete all existing Rows
     [model.query.delete() for model in [
-        TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick,
+        TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Tick,
         TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
     ]]
     db_session.commit()

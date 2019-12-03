@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from time import sleep, time
 
 from db.database import db_session
-from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 
 TICK_TIME_IN_SECONDS = 180  # SET TO 180

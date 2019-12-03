@@ -8,7 +8,7 @@ from flask import json
 from flask import Flask, session, request, flash, url_for, redirect, render_template, abort, g
 
 from db.database import db_session
-from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
+from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, \
     Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 from app.api import verify_flag
 

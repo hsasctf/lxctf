@@ -8,7 +8,7 @@ import os
 import sys
 
 from db.database import db_session
-from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 from reset_db1 import combine_service_infos, create_all_services_and_scripts
 

@@ -1,6 +1,7 @@
 import datetime
 import random
 import string
+import enum
 
 from flask_login import UserMixin
 from sqlalchemy import CheckConstraint
@@ -97,45 +98,12 @@ class Team(ModelBase, UserMixin):
     def __str__(self):
         return "{}".format(self.team_name)  # used for password reset! do not change
 
-
-class Food(ModelBase):
-    __tablename__ = "food"
-
-    name = Column(String(64))
-    price = Column(DECIMAL(4, 2))
-
-    def __str__(self):
-        return "Food {}".format(self.name)
-
-
-import enum
-
-
-class FoodSize(enum.Enum):
-    small = 1
-    large = 2
-
-
-class Catering(ModelBase):
-    __tablename__ = "catering"
+class User(ModelBase):
+    __tablename__ = "user"
 
     event_id = Column(Integer, ForeignKey('event.id', ondelete='CASCADE'), nullable=False)
     event = relationship('Event',
-                         backref=backref('caterings', cascade="all, delete-orphan", lazy='dynamic'))
-    food_id = Column(Integer, ForeignKey('food.id', ondelete='CASCADE'), nullable=False)
-    food = relationship('Food',
-                        backref=backref('caterings', cascade="all, delete-orphan", lazy='dynamic'))
-    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
-    user = relationship('User',
-                        backref=backref('caterings', cascade="all, delete-orphan", lazy='dynamic'))
-    size = Column(Enum(FoodSize), default=2, nullable=False)
-
-    def __str__(self):
-        return "Food {}".format(self.food)
-
-
-class User(ModelBase):
-    __tablename__ = "user"
+                         backref=backref('users', cascade="all, delete-orphan", lazy='dynamic'))
 
     forename = Column(String(35), nullable=False)
     surname = Column(String(35), nullable=False)
