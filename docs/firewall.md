@@ -21,8 +21,8 @@ Please notice that ansible **configures your local firewall** if you install thi
 
 ## Varaibles used in this readme
 
--   **&ltteam-id&gt**, the id of the team taking part in the ctf
--   **&ltservice-port&gt**, all ports ment for attackable services (can be specified in roles/firewall/vars/main.yml)
+-   **&lt;team-id&gt;**, the id of the team taking part in the ctf
+-   **&lt;service-port&gt;**, all ports ment for attackable services (can be specified in roles/firewall/vars/main.yml)
 
 
 <a id="orge234c04"></a>
@@ -53,18 +53,18 @@ The following packages are accepted:
 The following packages are accepted:
 
 -   TCP ESTABLISHED, RELATED
--   TCP SYN from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.40.&ltteam-id&gt.0/24** port 22
--   TCP SYN from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.40.&ltteam-id&gt.0/24** port &ltservice-port&gt
--   UDP from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.40.&ltteam-id&gt.0/24** port &ltservice-port&gt
--   UDP from **10.40.&ltteam-id&gt.0/24** to **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** port &ltservice-port&gt
--   TCP SYN from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.39.&ltteam-id&gt.0/24** port 22
--   TCP from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.38.&ltteam-id&gt.0/24**
--   UDP from **10.42.&ltteam-id&gt.1-10.42.&ltteam-id&gt.5** to **10.38.&ltteam-id&gt.0/24**
+-   TCP SYN from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.40.&lt;team-id&gt;.0/24** port 22
+-   TCP SYN from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.40.&lt;team-id&gt;.0/24** port &lt;service-port&gt;
+-   UDP from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.40.&lt;team-id&gt;.0/24** port &lt;service-port&gt;
+-   UDP from **10.40.&lt;team-id&gt;.0/24** to **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** port &lt;service-port&gt;
+-   TCP SYN from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.39.&lt;team-id&gt;.0/24** port 22
+-   TCP from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.38.&lt;team-id&gt;.0/24**
+-   UDP from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.38.&lt;team-id&gt;.0/24**
 
 
 <a id="org2688379"></a>
 
 ## Last steps
 
-Iptables is enabled via systemctl and the configuration is exported to  &ltansible-path&gt/files/iptables.fw.
+Iptables is enabled via systemctl and the configuration is exported to  &lt;ansible-path&gt;/files/iptables.fw.
 
