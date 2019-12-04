@@ -126,8 +126,8 @@ def unregister():
         db_session.commit()
 
         msg = Message(subject="Unregister",
-                      sender="ctf@nohost.eu",
-                      reply_to="register@ctf.uber.space",
+                      sender=config.MAIL_DEFAULT_SENDER,
+                      reply_to=config.MAIL_REPLY_TO,
                       recipients=[user.email],
                       body="You requested your deletion from all CTF teams. To confirm use this URL"
                            " {}{}".format(
@@ -231,8 +231,8 @@ def validation_passwordreset(team_id, hash):
             db_session.commit()
 
             msg = Message(subject="Password Reset",
-                          sender="ctf@nohost.eu",
-                          reply_to="register@ctf.uber.space",
+                          sender=config.MAIL_DEFAULT_SENDER,
+                          reply_to=config.MAIL_REPLY_TO,
                           recipients=[u.email for u in users],
                           body="Password for your team was set to: {}".format(pw)
                           )
@@ -257,8 +257,8 @@ def passwordreset():
         users = [m.user for m in members]
 
         msg = Message(subject="Password Reset",
-                      sender="ctf@nohost.eu",
-                      reply_to="register@ctf.uber.space",
+                      sender=config.MAIL_DEFAULT_SENDER,
+                      reply_to=config.MAIL_REPLY_TO,
                       recipients=[u.email for u in users],
                       body="Please validate your password reset request at {}{}".format(
                         config.URL_BASE,
@@ -290,8 +290,8 @@ def get_empty_event_or_fail():
 
 def send_validation_email(u, team):
     msg = Message(subject="Confirm your registration in CTF team",
-                  sender="ctf@nohost.eu",
-                  reply_to="register@ctf.uber.space",
+                  sender=config.MAIL_DEFAULT_SENDER,
+                  reply_to=config.MAIL_REPLY_TO,
                   recipients=[u.email],
                   body="You were added to the CTF team *{}*. To confirm your membership use this URL"
                        " {}{}".format(
