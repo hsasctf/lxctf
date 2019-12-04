@@ -8,14 +8,12 @@ Recommended (tested) OS is: Xubuntu/Lubuntu 16.04 Desktop 64 Bit
 
 Installed manually as described in https://github.com/zfsonlinux/zfs/wiki/Ubuntu-16.04-Root-on-ZFS
 
-Use `tank` instead of `rpool` in each command!
-
-create dataset `tank/lxd` using `zfs create tank/lxd`
+create dataset `rpool/lxd` using `zfs create rpool/lxd`
 
 # ZFS Partition
 
-Instead of Root on ZFS it's also possible to have a partition formatted with ZFS with a pool named `tank`.
-Then just create the dataset `lxd` using `zfs create tank/lxd`.
+Instead of Root on ZFS it's also possible to have a partition formatted with ZFS with a pool named `rpool`.
+Then just create the dataset `lxd` using `zfs create rpool/lxd`.
 
 ## LXD Production setup
 

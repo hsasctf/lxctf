@@ -117,7 +117,7 @@ class CtfInventory(object):
                         "ansible_ssh_user": "vagrant",
                         "lxd_proxy_host": "127.0.0.1:8445",
                         "lxd_trust_pw": GLOBAL_CONFIG['lxd_trust_pw'],
-                        "lxd_zfs_pool": "tank/lxd",
+                        "lxd_zfs_pool": "rpool/lxd",
                         "secret": GLOBAL_CONFIG['secret']
                     },
                     "controller": {

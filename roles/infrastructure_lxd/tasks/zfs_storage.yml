@@ -17,7 +17,7 @@
 
 
 
-#- name: Adding ZFS Pool to LXD config on development system, zpool=tank, dataset=lxd
+#- name: Adding ZFS Pool to LXD config on development system, zpool=rpool, dataset=lxd
 #  when: lxd_pool_check.status == 404 and in_vagrant is defined
 #  uri:
 #    url: "https://127.0.0.1:8443/1.0/storage-pools"
@@ -25,7 +25,7 @@
 #    status_code: 201
 #    body:
 #      config:
-#        zfs.pool_name: tank
+#        zfs.pool_name: rpool
 #      driver: zfs
 #      name: default
 #    body_format: json
@@ -69,14 +69,14 @@
 
 
 - name: create pool if fstype of 4th partition is not zfs
-  command: zpool create -f -o ashift=12 -O atime=off -O dedup=off -O compression=lz4 -O normalization=formD tank /dev/sda4
+  command: zpool create -f -o ashift=12 -O atime=off -O dedup=off -O compression=lz4 -O normalization=formD rpool /dev/sda4
   when: partition.changed and sda_info.partitions.3.fstype != "zfs" and in_vagrant is defined
   register: pool
   become: True
 
 
 - name: add dataset lxd
-  command: zfs create tank/lxd
+  command: zfs create rpool/lxd
   become: True
   when: in_vagrant is defined
   ignore_errors: True
@@ -95,7 +95,7 @@
     status_code: 201
     body:
       config:
-        source: tank/lxd
+        source: rpool/lxd
       driver: zfs
       name: default
     body_format: json
@@ -149,12 +149,12 @@
 ## see: https://github.com/lxc/lxd/issues/2305
 #
 #- name: add Zvols parent
-#  command: zfs create tank/docker
+#  command: zfs create rpool/docker
 #  become: True
 #  ignore_errors: True
 #
 #- name: add Zvols for btrfs
-#  command: "zfs create tank/docker/{{ item }}"
+#  command: "zfs create rpool/docker/{{ item }}"
 #  become: True
 #  ignore_errors: True
 #  with_items:
@@ -163,7 +163,7 @@
 #- name: Create btrfs filesystems on zvols
 #  filesystem:
 #    fstype: btrfs
-#    dev: "/dev/zvol/tank/docker/{{ item }}"
+#    dev: "/dev/zvol/rpool/docker/{{ item }}"
 #  with_items:
 #    - "{{groups['ad_containers']}}"
 #
@@ -176,7 +176,7 @@
 #      devices:
 #        docker:
 #          path: /var/lib/docker
-#          source: "/dev/zvol/tank/docker/{{ item }}"
+#          source: "/dev/zvol/rpool/docker/{{ item }}"
 #          type: disk
 #    body_format: json
 #    headers:

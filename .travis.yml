@@ -16,9 +16,9 @@ script:
       sudo apt install -y zfsutils-linux;
       sudo lxd activateifneeded;
       sudo lxd waitready;
-      sudo fallocate -l 20G /tank.img;
-      sudo zpool create -O atime=off -O compression=lz4 tank /tank.img;
-      sudo zfs create tank/lxd;
+      sudo fallocate -l 20G /rpool.img;
+      sudo zpool create -O atime=off -O compression=lz4 rpool /rpool.img;
+      sudo zfs create rpool/lxd;
       sudo apt-get --yes install python3-yaml python-yaml python-pip;
       sudo ansible-galaxy install -r requirements.yml;
       sudo pip install ansible==2.8.7;
