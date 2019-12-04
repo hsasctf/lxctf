@@ -3,8 +3,7 @@
 ## Development Environment
 
 
-Consists of 2 VMs
-- 172.16.17.5 controller running ansible
+Consists of 1 VM hosting multiple LXD containers
 - 172.16.17.10 ctfserver running LXD and OpenVPN servers
     - LXD container `web` on 10.38.1.1: runs the gameserver (Scorebot, Gamebot, Dashboard)
     - LXD containers `team1` -- `team253`, with IP addresses 10.40.1-253.1: containers für teams
@@ -19,7 +18,7 @@ Suspend then Resume: `vagrant suspend` -> `vagrant resume`
 
 Halt then Up: `vagrant halt` -> `vagrant up`
 
-SSH to VM: `vagrant ssh ctfserver` (or `controller`)
+SSH to VM: `vagrant ssh`
 
 
 ### Setup development environment

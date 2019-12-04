@@ -9,6 +9,7 @@
   become: True
   retries: 10
   delay: 10
+  when: ansible_distribution_release == "xenial"
 
 - name: Add repository key to the system
   apt_key: keyserver=keyserver.ubuntu.com id={{ item }}
@@ -16,6 +17,7 @@
   with_items:
     - '0xcbcb082a1bb943db'
     - '0xF1656F24C74CD1D8'
+  when: ansible_distribution_release == "xenial"
 
 
   
