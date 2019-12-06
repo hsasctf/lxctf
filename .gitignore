@@ -32,7 +32,7 @@ requirements.bak
 
 seafile-ignore.txt
 
-
+.bash_history
 
 # KDE Dolphin
 .directory
