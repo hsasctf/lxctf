@@ -117,19 +117,3 @@ Due to DB key issues, modifying the `models.py` needs to be seperated in several
    > ```sh
    > root@web:ctfdbapi$ alembic upgrade head
    > ```
-   
-5. > ### Add MTO relationship between `user`-`event` in `models.py`.
-   > add following lines in `models.py` in class `User`:
-   > ```python
-   >     event_id = Column(Integer, ForeignKey('event.id', ondelete='CASCADE'), nullable=False)
-   >     event = relationship('Event',
-   >         backref=backref('users', cascade="all, delete-orphan", lazy='dynamic'))
-   > ```
-   > create alembic script in `/srv/ctf/ctfdbapi`
-   > ```sh 
-   > root@web:ctfdbapi$ alembic revision --outogenerate -m 'add_mto-rel_user-event'
-   > ```
-   > change revision in `/src/ctf/ctfdbapi`
-   > ```sh
-   > root@web:ctfdbapi$ alembic upgrade head
-   > ```
