@@ -2,7 +2,7 @@
 client
 dev tun
 proto udp
-remote {{ inventory_hostname }} 40{{ '%03d'|format(item|replace('team','')|int) }}
+remote {{ ansible_default_ipv4.address }} 40{{ '%03d'|format(item|replace('team','')|int) }}
 resolv-retry infinite
 nobind
 persist-key
