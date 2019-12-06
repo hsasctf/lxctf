@@ -10,6 +10,7 @@ from time import sleep, time
 from db.database import db_session
 from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
+from utils import get_current_tick
 
 TICK_TIME_IN_SECONDS = 180  # SET TO 180
 
@@ -57,7 +58,7 @@ def main():
         event = Event.query.order_by(Event.id.desc()).first()
 
         if not game_ad_running():
-            logger.info("Gamed ended at {}".format(str(datetime.now())))
+            logger.info("Game ended at {}".format(str(datetime.now())))
             break
 
         # Create a new tick
@@ -142,26 +143,10 @@ def get_list_of_scripts_to_run(challenges, num_benign_scripts):
     return [*set_flag_scripts, *other_scripts]
 
 
-def get_current_tick():
-    event = Event.query.order_by(Event.id.desc()).first()
 
-    tick = Tick.query.filter_by(event=event).order_by(Tick.id.desc()).first()
-
-    seconds_left = 1337
-
-    if tick:
-        seconds_left = (tick.time_to_change - datetime.now()).total_seconds()
-        if seconds_left < 0:
-            seconds_left = 0
-
-    db_session.remove()
-
-    return tick, seconds_left
 
 
 if __name__ == "__main__":
-    # for c in Challenge.query.filter_by(type='ad'):
-    #     print(c.name)
     logger.info("Gamebot started")
 
     import sys
