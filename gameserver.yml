@@ -30,16 +30,22 @@
 
 - hosts: web
   tasks:
-    - user:
+    - name: add user ctf with home /srv/ctf
+      user:
         name: ctf
+        home: /srv/ctf
       become: True
+
+    - name: Set authorized key taken from file for ctf user
+      authorized_key:
+        user: ctf
+        state: present
+        key: "{{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}"
+      become: yes
 
     - name: set timezone to UTC
       timezone:
         name: UTC
-      become: yes
-
-    - file: path=/srv/ctf state=directory
       become: yes
 
     - name: sync project to container when not dev system
@@ -140,10 +146,6 @@
         #virtualenv: /home/{{role_path|basename}}/env
         #virtualenv_python: python3
       become: yes
-
-
-
-
 
 
     - name: set owner/group for service files
