@@ -100,11 +100,7 @@ class Team(ModelBase, UserMixin):
 
 class User(ModelBase):
     __tablename__ = "user"
-
-    event_id = Column(Integer, ForeignKey('event.id', ondelete='CASCADE'), nullable=False)
-    event = relationship('Event',
-                         backref=backref('users', cascade="all, delete-orphan", lazy='dynamic'))
-
+    
     forename = Column(String(35), nullable=False)
     surname = Column(String(35), nullable=False)
     email = Column(String(254), nullable=False)
