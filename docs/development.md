@@ -76,11 +76,9 @@ EOF
     1. in SSH run `lxc list` for a list of containers
     1. Ignore this message from LXD: "If this is your first time using LXD, you should also run: lxd init"
     1. `lxc exec NAME bash` for opening (root) bash in containers
-1. run `lxc exec web bash` for starting a shell in the gameserver container *web*, then switch to user `ctf`: `sudo -u ctf --login bash`. 
-1. if you have Python 3 installed on developer machine you can also use `./manage.py dev shell` for logging in as user `ctf` and opening a shell in the correct directory.
-1. simulate a login like a team would login: `./manage.py dev 2` (for team2)
+1. run `lxc exec web bash` for starting a shell in the gameserver container *web*, then switch to user `ctf`: `sudo -u ctf --login bash` and run `cd /srv/ctf`. 
+1. simulate a login like a team would login: `lxc exec team1 sudo -u ubuntu --login bash`
 1. NOTE: Gameserver code is mounted from Vagrant folder to container `web` in path `/srv/ctf`. This means you can change the code from host and it is automatically changed in your VM + container.
-
 1. NOTE: tmux is the recommended tool to run all gameserver services for development
     
     - to exit tmux use CTRL+b then d

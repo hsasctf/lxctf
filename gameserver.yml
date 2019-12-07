@@ -30,10 +30,9 @@
 
 - hosts: web
   tasks:
-    - name: add user ctf with home /srv/ctf
+    - name: add user ctf
       user:
         name: ctf
-        home: /srv/ctf
       become: True
 
     - name: Set authorized key taken from file for ctf user
