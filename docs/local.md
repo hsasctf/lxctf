@@ -8,14 +8,12 @@ Recommended (tested) OS is: Xubuntu/Lubuntu 16.04 Desktop 64 Bit
 
 Installed manually as described in https://github.com/zfsonlinux/zfs/wiki/Ubuntu-16.04-Root-on-ZFS
 
-Use `tank` instead of `rpool` in each command!
-
-create dataset `tank/lxd` using `zfs create tank/lxd`
+create dataset `rpool/lxd` using `zfs create rpool/lxd`
 
 # ZFS Partition
 
-Instead of Root on ZFS it's also possible to have a partition formatted with ZFS with a pool named `tank`.
-Then just create the dataset `lxd` using `zfs create tank/lxd`.
+Instead of Root on ZFS it's also possible to have a partition formatted with ZFS with a pool named `rpool`.
+Then just create the dataset `lxd` using `zfs create rpool/lxd`.
 
 ## LXD Production setup
 
@@ -34,7 +32,7 @@ reboot needed
 ```bash
 sudo apt-get --yes install python3-yaml python-yaml python-pip
 sudo ansible-galaxy install -r requirements.yml 
-sudo pip install ansible==2.8.7
+sudo pip install ansible==2.8.6
 sudo ansible-playbook -i inventories/ctf.py --key-file <path to lxctf>/sshkey/id_rsa_ctf site.yml
 lxc config set web limits.cpu.priority 9
 lxc config set web limits.cpu 4

@@ -1,13 +1,6 @@
 Vagrant.require_version ">= 1.7.0"
 
-
-
-$script_controller = <<-SCRIPT
-SCRIPT
-
-
 $script_ctfserver = <<-SCRIPT
-sudo chmod 0600 /vagrant/sshkey/id_rsa_ctf
 SCRIPT
 
 
@@ -42,7 +35,7 @@ Vagrant.configure("2") do |config|
               ansible.inventory_path = inventory
               ansible.verbose        = ""
               ansible.install_mode   = "pip"
-              ansible.version        = "2.8.7"
+              ansible.version        = "2.8.6"
               ansible.extra_vars = {
                   in_vagrant: true
               }
@@ -77,34 +70,7 @@ Vagrant.configure("2") do |config|
         end
 
         machine.vm.provision "shell", inline: $script_ctfserver
-    end
-    
-    
-    config.vm.define 'controller' do |machine|
-        machine.vm.hostname = "controller"
-        machine.vm.network "private_network", ip: "172.16.17.5"
-
-
-        if ctfdev_config['provider'] == 'libvirt'
-            machine.vm.provider :libvirt do |lv|
-                lv.memory = 1024
-                lv.cpus = 1
-                machine.vm.synced_folder './', '/vagrant', type: 'nfs'
-                machine.vm.provision "shell", inline: $script_controller
-            end
-
-        elsif ctfdev_config['provider'] == 'virtualbox'
-            machine.vm.provider :virtualbox do |vb|
-                vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-
-                vb.memory = 1024
-                vb.cpus = 1
-                vb.customize ["modifyvm", :id, "--audio", "none"]
-                machine.vm.synced_folder ".", "/vagrant"
-                machine.vm.provision "shell", inline: $script_controller
-            end
-        end
-
+      
         ctf_ansi_provision.call("vagrant_ansible.yml", "inventories/localhost")
         ctf_ansi_provision.call("site.yml", "inventories/ctf.py")
 

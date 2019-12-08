@@ -1,5 +1,3 @@
-# TODO Bei allen querys: filter auf event=event
-
 import random
 import string
 
@@ -17,7 +15,7 @@ api = Blueprint('api', __name__,
                 template_folder='templates')
 
 from config import API_SECRET
-from gamebot import get_current_tick
+from utils import get_current_tick
 from sqlalchemy import inspect
 from sqlalchemy.sql import func, label
 
@@ -35,7 +33,7 @@ def generate_new_flag():
     return "FLAG_{}".format(new_flag)
 
 
-##### out API functions #####
+##### API functions #####
 
 
 @api.route('/getjeopardylist')
@@ -86,16 +84,13 @@ def get_team_list():
     return jsonify(res)
 
 
-#### inCTF API function #####
-
-
 @api.route("/tick_duration")
 def get_tick_duration():
     _, seconds_to_next_tick = get_current_tick()
     return json.dumps(seconds_to_next_tick)
 
 
-##### iCTF compatible API functions #######
+##### iCTF section #######
 
 
 @api.route('/state')

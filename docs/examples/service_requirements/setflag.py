@@ -31,6 +31,7 @@ class SetFlag():
         self.flag_id = user_name = _rand_str()
         self.error_msg = ''
         self.token = ''
+        self.error = 0
 
         try:
             conn = HTTPConnection(ip, port=port, timeout=10)
@@ -41,11 +42,13 @@ class SetFlag():
                 else:
                     raise Exception('bad response: {} {}'.format(res.status, res.read()))
         except Exception as e:
+            self.error = 30
             self.error_msg = str(e)
 
     def result(self):
-        return {'FLAG_ID': self.flag_id,  
-                'TOKEN': self.token, 
+        return {'FLAG_ID': self.flag_id,
+                'TOKEN': self.token,
+                'ERROR': self.error,
                 'ERROR_MSG': self.error_msg}
 
 
