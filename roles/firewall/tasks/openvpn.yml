@@ -4,7 +4,6 @@
     protocol: udp
     destination_port: "40{{ '%03d'|format(hostvars[item]['team_num']|int) }}"
     ctstate: NEW
-    syn: match
     jump: ACCEPT
   become: yes
   loop: "{{ groups['ad_containers'] }}"
@@ -15,7 +14,6 @@
     protocol: udp
     destination_port: "40254"
     ctstate: NEW
-    syn: match
     jump: ACCEPT
   become: yes
 
