@@ -1,7 +1,5 @@
 ---
-# tasks file for vpn
-# 
-# not idempotent!
+# tasks file for firewall
 
 ## Installation
 - name: install dependencies
@@ -53,7 +51,8 @@
     - team254
   delegate_to: 127.0.0.1
 
-
+- name: add iptables rules for openvpn
+  include: openvpn.yml
 
 ## FORWARD CHAIN
 # Allow established and related

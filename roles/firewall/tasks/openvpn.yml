@@ -1,0 +1,21 @@
+- name: Host allow new openvpn conections
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: "40{{ '%03d'|format(hostvars[item]['team_num']|int) }}"
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: yes
+  loop: "{{ groups['ad_containers'] }}"
+
+- name: Host allow new openvpn conections (also for admin team 254)
+  iptables:
+    chain: INPUT
+    protocol: udp
+    destination_port: "40254"
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: yes
+
