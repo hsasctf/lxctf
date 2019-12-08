@@ -30,10 +30,11 @@ Please notice that ansible **configures your local firewall** if you install thi
 ## Initial configurations
 
 In the beginning iptables is installed, if not present already.
-Ipv6 is disabled via sysctl to only allow ipv4 packages also ip-forwarding is enabled for ipv4.
+IPv6 is disabled via sysctl to only allow ipv4 packages also ip-forwarding is enabled for ipv4.
 All rules in the INPUT, FORWARD and OUTPUT chain are **flushed**.
+All rules in the NAT table are **flushed**.
 
-The default policies for INPUT-/ FORWARD-chain are set to REJECT/ DROP, thus making them **whitelists**.
+The default policies for INPUT-/ FORWARD-chain are set to ACCEPT, but they are **whitelists** because the chains end with a default rule to log and reject/drop the traffic.
 
 
 <a id="org1a0f89c"></a>
@@ -44,6 +45,7 @@ The following packages are accepted:
 
 -   TCP ESTABLISHED, RELATED on any port
 -   TCP SYN on port 22
+-   OpenVPN on UDP port 40254, 40001 for team 1 and so on (zero padded)
 
 
 <a id="org82fb6e7"></a>
@@ -60,6 +62,7 @@ The following packages are accepted:
 -   TCP SYN from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.39.&lt;team-id&gt;.0/24** port 22
 -   TCP from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.38.&lt;team-id&gt;.0/24**
 -   UDP from **10.42.&lt;team-id&gt;.1-10.42.&lt;team-id&gt;.5** to **10.38.&lt;team-id&gt;.0/24**
+-   Everything from **10.38.1.1** to **10.40.**
 
 
 <a id="org2688379"></a>

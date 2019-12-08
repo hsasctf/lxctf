@@ -1,0 +1,17 @@
+# action variable should be either DROP or REJECT
+
+- name: log rejected
+  iptables:
+    chain: "{{ chain }}"
+    limit: 2/second
+    limit_burst: 20
+    jump: LOG
+    log_prefix: "IPTABLES:{{ chain }}_{{ action }}: "
+    log_level: info
+  become: yes
+
+- name: Default rule to allow reject instead of drop
+  iptables:
+    chain: "{{ chain }}"
+    jump: "{{ action }}"
+  become: yes
