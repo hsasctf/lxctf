@@ -8,7 +8,7 @@
   become: yes
   loop: "{{ groups['ad_containers'] }}"
 
-- name: Host allow new openvpn conections (also for admin team 254)
+- name: Host allow new wireguard conections (also for admin team 254)
   iptables:
     chain: INPUT
     protocol: udp
