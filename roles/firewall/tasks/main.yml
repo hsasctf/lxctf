@@ -141,20 +141,20 @@
 
 ## Hardcoded teammembers (no necessarity to do otherwise --> each team could create own local subnets)
 # Teamcontainer
-- name: Teamcontainer allow new ssh conections
+- name: Teamcontainer allow new ssh conections, from OpenVPN (41) and from wireguard (42)
   iptables:
     chain: FORWARD
-    src_range: 10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5
-    dst_range: 10.40.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255
+    source: "10.{{ item[1] }}.{{ item|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
     protocol: tcp
     destination_port: 22
     ctstate: NEW
     syn: match
     jump: ACCEPT
   become: True
-  with_items:
+  with_nested:
     - "{{groups['ad_containers']}}"
-    - team254
+    - [41, 42]
 
 
 
@@ -162,8 +162,8 @@
 - name: Teamcontainer allow new service conections (TCP)
   iptables:
     chain: FORWARD
-    src_range: 10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5
-    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    source: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
     protocol: tcp
     destination_port: "{{ item[1]|int }}"
     ctstate: NEW
@@ -173,33 +173,14 @@
   with_nested:
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
-
-
-
-# Temcontainer service ports TCP
-- name: Teamcontainer allow new service conections (TCP)
-  iptables:
-    chain: FORWARD
-    src_range: "10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5"
-    dst_range: "10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255"
-    protocol: tcp
-    destination_port: "{{ item[1]|int }}"
-    ctstate: NEW
-    syn: match
-    jump: ACCEPT
-  become: True
-  with_nested:
-    - team254
-    - "{{ service_ports }}"
-
-
+    - [40, 41, 42]
 
 # Teamcontainer service ports UDP
 - name: Teamcontainer allow new service conections (UDP from outside)
   iptables:
     chain: FORWARD
-    src_range: "10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5"
-    dst_range: "10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255"
+    source: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
     protocol: udp
     destination_port: "{{ item[1]|int }}"
     jump: ACCEPT
@@ -207,77 +188,77 @@
   with_nested:
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
-
-
-
-# Teamcontainer service ports UDP
-- name: Teamcontainer allow new service conections (UDP from team254)
-  iptables:
-    chain: FORWARD
-    src_range: "10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5"
-    dst_range: "10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255"
-    protocol: udp
-    destination_port: "{{ item[1]|int }}"
-    jump: ACCEPT
-  become: True
-  with_nested:
-    - team254
-    - "{{ service_ports }}"
-
+    - [40, 41, 42]
 
 
 # Teamcontainer service ports UDP
 - name: Teamcontainer allow new service conections (UDP from inside)
   iptables:
     chain: FORWARD
-    src_range: "10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255"
-    dst_range: "10.42.{{ item[0]|replace('team','')|int }}.1-10.42.{{ item[0]|replace('team','')|int }}.5"
+    source: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
     protocol: udp
+    destination_port: "{{ item[1]|int }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+    - [40, 41, 42]
+
+
+# Admin connectionss
+- name: Allow connections to everywhere from admin VPN
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item }}.254.0/24"
+    destination: "!10.{{ item }}.254.0/24"
     jump: ACCEPT
   become: True
   with_items:
-    - "{{groups['ad_containers']}}"
-    - team254
+    - [40, 41, 42]
 
 # Gameserver(Scorebot) to team VMs
-- name: Gameserver(Scorebot) to team VMs (including TCP, UDP, ...)
+- name: Gameserver(Scorebot) to team VMs (TCP)
   iptables:
     chain: FORWARD
     source: 10.38.1.1
-    dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
     destination_port: "{{ item[1]|int }}"
+    protocol: tcp
     ctstate: NEW
+    syn: match
     jump: ACCEPT
   become: True
   with_nested:
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
 
+- name: Gameserver(Scorebot) to team VMs (TCP)
+  iptables:
+    chain: FORWARD
+    source: 10.38.1.1
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    destination_port: "{{ item[1]|int }}"
+    protocol: udp
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
 
 # Jeopardy for each team
-- name: Allow connections to jeopardy VM (wireguard)
+- name: Allow connections to jeopardy VM (wireguard/openvpn/vm)
   iptables:
     chain: FORWARD
-    src_range: "10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5"
+    source: "10.{{ item[1] }}.{{ item[0]|replace('team','')|int }}.0/24"
     destination: "10.39.1.0/24"
     ctstate: NEW
     jump: ACCEPT
   become: True
-  with_items:
+  with_nested:
     - "{{groups['ad_containers']}}"
-    - team254
-
-- name: Allow connections to jeopardy VM (openvpn)
-  iptables:
-    chain: FORWARD
-    source: "10.41.0.0/24"
-    destination: "10.39.1.0/24"
-    ctstate: NEW
-    jump: ACCEPT
-  become: True
-  with_items:
-    - "{{groups['ad_containers']}}"
-    - team254
+    - [40, 41, 42]
 
 - name: include logged default reject rules
   include: default_action.yml chain=FORWARD action=REJECT
