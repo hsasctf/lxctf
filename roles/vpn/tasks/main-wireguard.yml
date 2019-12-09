@@ -9,8 +9,10 @@
   become: True
   
 
-- name: add wireguard to ppa
-  shell: sudo add-apt-repository ppa:wireguard/wireguard
+- name: add wireguard ppa
+  apt_repository:
+    repo: ppa:wireguard/wireguard
+  become: yes
 
 
 - name: apt-get update
