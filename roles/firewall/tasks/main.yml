@@ -39,6 +39,12 @@
 
 ## INPUT CHAIN
 
+- name: Allow icmp
+  iptables:
+    chain: INPUT
+    protocol: icmp
+    jump: ACCEPT
+  become: yes
 
 
 # Allow established and related
@@ -105,6 +111,12 @@
     jump: ACCEPT
   become: yes
 
+- name: Allow icmp
+  iptables:
+    chain: FORWARD
+    protocol: icmp
+    jump: ACCEPT
+  become: yes
 
 - name: forward from team VM to default interface (internet access)
   iptables:
@@ -162,30 +174,32 @@
 - name: Teamcontainer allow new service conections (TCP)
   iptables:
     chain: FORWARD
-    source: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
-    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    source: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
     protocol: tcp
-    destination_port: "{{ item[1]|int }}"
+    destination_port: "{{ item[2]|int }}"
     ctstate: NEW
     syn: match
     jump: ACCEPT
   become: True
   with_nested:
     - "{{groups['ad_containers']}}"
+    - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
     - [40, 41, 42]
 
 # Teamcontainer service ports UDP
-- name: Teamcontainer allow new service conections (UDP from outside)
+- name: Teamcontainer allow new service conections (UDP from inside)
   iptables:
     chain: FORWARD
-    source: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
-    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    source: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
     protocol: udp
-    destination_port: "{{ item[1]|int }}"
+    destination_port: "{{ item[2]|int }}"
     jump: ACCEPT
   become: True
   with_nested:
+    - "{{groups['ad_containers']}}"
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
     - [40, 41, 42]
@@ -195,13 +209,14 @@
 - name: Teamcontainer allow new service conections (UDP from inside)
   iptables:
     chain: FORWARD
-    source: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
-    destination: "10.{{ item[2] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    source: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
+    destination: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
     protocol: udp
-    destination_port: "{{ item[1]|int }}"
+    destination_port: "{{ item[2]|int }}"
     jump: ACCEPT
   become: True
   with_nested:
+    - "{{groups['ad_containers']}}"
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
     - [40, 41, 42]
