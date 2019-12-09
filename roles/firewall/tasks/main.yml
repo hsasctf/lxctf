@@ -86,6 +86,9 @@
 - name: add iptables rules for openvpn
   include: openvpn.yml
 
+- name: add iptables rules for wireguard
+  include: wireguard.yml
+
 - name: include logged default reject rules
   include: default_action.yml chain=INPUT action=REJECT
 
