@@ -39,6 +39,8 @@ def not_found(error):
     return render_template('404.html'), 404
 
 
+# admin
+
 
 from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
     Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
@@ -46,6 +48,7 @@ from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, C
 import flask_admin as admin
 from flask_admin.contrib import sqla
 
+# ADMIN
 from flask import request, Response
 from werkzeug.exceptions import HTTPException
 

@@ -1,3 +1,5 @@
+# TODO Bei allen querys: filter auf event=event
+
 import random
 import string
 
@@ -14,8 +16,8 @@ from db.models import AttendingTeam, Event, Submission, Flag, Challenge, Member,
 api = Blueprint('api', __name__,
                 template_folder='templates')
 
-from config import API_SECRET
-from utils import get_current_tick
+from ctfdbapi.config import API_SECRET
+from ctfdbapi.gamebot import get_current_tick
 from sqlalchemy import inspect
 from sqlalchemy.sql import func, label
 
@@ -33,7 +35,7 @@ def generate_new_flag():
     return "FLAG_{}".format(new_flag)
 
 
-##### API functions #####
+##### out API functions #####
 
 
 @api.route('/getjeopardylist')
@@ -84,13 +86,16 @@ def get_team_list():
     return jsonify(res)
 
 
+#### inCTF API function #####
+
+
 @api.route("/tick_duration")
 def get_tick_duration():
     _, seconds_to_next_tick = get_current_tick()
     return json.dumps(seconds_to_next_tick)
 
 
-##### iCTF section #######
+##### iCTF compatible API functions #######
 
 
 @api.route('/state')
@@ -661,3 +666,24 @@ def get_uptime_for_team(team):
     if len(uptimes) == 0:
         return 0
     return total / len(uptimes)
+
+# *-----------------------------------------------------*
+@api.route("/reasons")
+def grund():
+    if request.args.get('secret') != API_SECRET:
+        abort(401)
+
+    event = Event.query.order_by(Event.id.desc()).first()
+    #particiant_ids = [x.id for x in event.participants]
+
+    reasons = db_session.query(TeamScore.reason)
+
+    to_return = {'reasons': {}}
+
+    for reason in reasons:
+
+        result = dict()
+        result['reason']= str(reason)
+
+
+    return jsonify(to_return)

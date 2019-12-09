@@ -4,7 +4,7 @@
 
 #https://github.com/coxley/flask-file-structure/blob/master/flask.wsgi
 
-from app import app
+from app import app as application
 
 #db.create_all()
 

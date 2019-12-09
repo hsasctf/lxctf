@@ -3,7 +3,7 @@ SECRET_KEY = b'Y\x1d@j\xcbj\x8fhg\xd6\xeb\xbf"\x03P\x9c'
 DEBUG=False
 
 NAME_CTF = "HSAlbSigCTF"
-AUTHORS = "Nico, Denis, Leo, Clemens, Robin, Stefan"
+AUTHORS = "Peter, Leo, Dominik, Anton"
 YEAR = 2019
 FOOTER_DESCRIPTION = """We are a team of students who develop a Capture the Flag for
                     Albstadt-Sigmaringen University."""
@@ -21,4 +21,3 @@ MAIL_USE_TLS = True
 MAIL_USERNAME = ""
 MAIL_PASSWORD = ""
 MAIL_DEFAULT_SENDER = ""
-MAIL_REPLY_TO = ""

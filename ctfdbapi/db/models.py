@@ -13,7 +13,6 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import UniqueConstraint, create_engine
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql.ddl import CreateTable
 
@@ -207,7 +206,7 @@ class Submission(ModelBase):
     flag = relationship('Flag',
                         backref=backref('submissions', cascade="all, delete-orphan", lazy='dynamic'))
 
-    # TODO should be None/NULL when no matching flag could be found
+    # should be None/NULL when no matching flag could be found
     submitted_string = Column(String(128), nullable=False)
 
     def __str__(self):

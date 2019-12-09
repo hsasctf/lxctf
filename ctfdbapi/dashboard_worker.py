@@ -7,7 +7,7 @@ import time
 import redis
 import requests
 
-from config import API_SECRET, API_BASE_URL
+from ctfdbapi.config import API_SECRET, API_BASE_URL
 
 REFRESH_INTERVAL = 1  # seconds
 
@@ -86,7 +86,7 @@ class RedisUpdater(object):
                             'team_id': attending_team_id,
                             'flag_id': flag_ids[attending_team_id][str(service_id)],
                         } for attending_team_id in
-                        dict(list(filter(lambda kv: str(service_id) in kv[1], flag_ids.items())))
+                        dict(list(filter(lambda kv: str(service_id) in kv[1], flag_ids.items())))  # TODO TEST THIS!!
                     ]
                 }
 
@@ -132,6 +132,13 @@ class RedisUpdater(object):
 
     def store_redis(self, key, value):
         self.redis_client.set(key, value)
+
+    def ctf_reasons(self):
+        url = '/'.join([self.api_url, "reasons"])
+        r = requests.get(url, params=self.params)
+        #reasons_data = r.json()["reasons"]
+        self.store_redis('ctf_reasons',json.dumps(r.json()))
+
 
 
 def main():

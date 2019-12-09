@@ -36,6 +36,7 @@ from ipaddress import ip_address, ip_network
 from app_register.forms import RegistrationForm, LoginForm, PasswordResetForm, UnregisterForm, AttendForm
 from hash_passwort import generate_password
 
+
 app = Flask(__name__, template_folder='templates', static_url_path="/static")
 
 app.config.from_object(config)
@@ -54,14 +55,14 @@ login_manager.init_app(app)
 def shutdown_session(exception=None):
     db_session.remove()
 
-
+# gets the ip adress
 def get_ip():
     if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
         return request.environ['REMOTE_ADDR']
     else:
         return request.environ['HTTP_X_FORWARDED_FOR'].lstrip("::ffff:")
 
-
+#checkig if the person is outside of the university network
 @app.before_request
 def limit_remote_addr():
     print(get_ip())
@@ -74,7 +75,7 @@ def load_user(user_id):
     return Team.query.filter_by(id=int(user_id)).first()
 
 
-
+# validate a Team and adds the Team later in the DB
 @app.route("/validate/<token>")
 def validate(token):
     u = Team.query.filter_by(token=token).first()
@@ -83,16 +84,18 @@ def validate(token):
     db_session.commit()
 
 
-
+# gives you the route to the /faq page
 @app.route("/faq/")
 def faq():
     return render_template("faq.html")
 
+# gives you the route to the home html side with the name "index.html"
 @app.route("/")
 def index():
     event = get_empty_event_or_fail()
     return render_template("index.html", event=event)
 
+# Dominik
 @app.route("/validation_unregister/<token>/")
 def validation_unregister(token):
     if len(token) < 10:
@@ -108,13 +111,15 @@ def validation_unregister(token):
     return flask.redirect(flask.url_for('index'))
 
 
-
+# Here we have the possibility that a Person can unregister his Account
 @app.route('/unregister/', methods=['GET', 'POST'])
 def unregister():
+    # Checks if the User is loged in
     if current_user.is_authenticated:
         flash("Please logout to use the unregister function.")
         return redirect(url_for('index'))
     form = UnregisterForm()
+    # Checks if the button is pushed and than checks if the E-Mail is right
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
 
@@ -126,8 +131,8 @@ def unregister():
         db_session.commit()
 
         msg = Message(subject="Unregister",
-                      sender=config.MAIL_DEFAULT_SENDER,
-                      reply_to=config.MAIL_REPLY_TO,
+                      sender="ctf@nohost.eu",
+                      reply_to="register@ctf.uber.space",
                       recipients=[user.email],
                       body="You requested your deletion from all CTF teams. To confirm use this URL"
                            " {}{}".format(
@@ -140,15 +145,19 @@ def unregister():
     return flask.render_template('unregister.html', form=form)
 
 
-@app.route("/validation_user/<token>/")
+@app.route("/validation_user/<token>/") # ???
+
+
 @app.route("/validate.php", defaults={'token': None})  # TODO testk
 def validation_user(token):
+    # checks if there is a token there if not give an error
     if token is None:
         token = request.args.get('token')
         if not token:
             flash("error")
         print(token)
 
+    # Verify the email address with the datetime
     user = User.query.filter_by(token=token).first()
     if user:
         user.verified = datetime.now()
@@ -160,24 +169,25 @@ def validation_user(token):
     return flask.redirect(flask.url_for('index'))
 
 
-
+# displays the team that are competing
 @app.route('/teams/', methods=['GET'])
 def teams():
     events = Event.query.filter_by().order_by(Event.id.desc())
     return flask.render_template('teams.html', events=events)
     
-
+# function how to create a team
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = RegistrationForm()
+    # checks if there is a team name
     if form.validate_on_submit():
         team = Team.query.filter_by(team_name=form.teamname.data).first()
         if team is not None:
             flash('Invalid teamname')
             return redirect(url_for('register'))
-
+        # takes a teamname and a password for the team and than put it in the db
         t = Team()
         t.set_password(form.password.data)
         t.team_name = form.teamname.data
@@ -189,11 +199,13 @@ def register():
 
     return flask.render_template('register.html', form=form)
 
+# function how to login
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = LoginForm()
+    # checks if ether the pwd or the name is wrong
     if form.validate_on_submit():
         user = Team.query.filter_by(team_name=form.teamname.data).first()
         if not user or not user.check_password(form.password.data):
@@ -213,14 +225,17 @@ def login():
 
     return flask.render_template('login.html', form=form)
 
+# Here you see how your password is reseted
 @app.route("/validation_passwordreset/<team_id>/<hash>/")
 def validation_passwordreset(team_id, hash):
+    # gets the value=id from the db
     team = Team.query.filter_by(id=int(team_id)).first()
 
-
+    # if there is no such id than there is no team
     if not team:
         flash("Team not found")
 
+    # if there is a team than change the password and send it trough an email to the user
     else:
         if hash == team.password:
             members = Member.query.filter_by(team=team)
@@ -231,8 +246,8 @@ def validation_passwordreset(team_id, hash):
             db_session.commit()
 
             msg = Message(subject="Password Reset",
-                          sender=config.MAIL_DEFAULT_SENDER,
-                          reply_to=config.MAIL_REPLY_TO,
+                          sender="ctf@nohost.eu",
+                          reply_to="register@ctf.uber.space",
                           recipients=[u.email for u in users],
                           body="Password for your team was set to: {}".format(pw)
                           )
@@ -244,11 +259,14 @@ def validation_passwordreset(team_id, hash):
 
     return flask.redirect(flask.url_for('index'))
 
+# this step happens before the above?
+# Here your password is reset by the user
 @app.route('/passwordreset/', methods=['GET', 'POST'])
 def passwordreset():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     form = PasswordResetForm()
+    # gets the team data from the db and sends an email
     if form.validate_on_submit():
         team = form.teamname.data
         team_id = team.id
@@ -257,8 +275,8 @@ def passwordreset():
         users = [m.user for m in members]
 
         msg = Message(subject="Password Reset",
-                      sender=config.MAIL_DEFAULT_SENDER,
-                      reply_to=config.MAIL_REPLY_TO,
+                      sender="ctf@nohost.eu",
+                      reply_to="register@ctf.uber.space",
                       recipients=[u.email for u in users],
                       body="Please validate your password reset request at {}{}".format(
                         config.URL_BASE,
@@ -272,6 +290,7 @@ def passwordreset():
 
     return flask.render_template('passwordreset.html', form=form)
 
+# returns you the first free subnet
 def first_empty_subnet():
     event = get_empty_event_or_fail()
     attending_teams = AttendingTeam.query.filter_by(event=event)
@@ -279,6 +298,7 @@ def first_empty_subnet():
     free_nets = set(range(1,250)).difference(used_nets)
     return list(free_nets)[0]
 
+# checks if there is already an event existing or if the user has to create a new one
 def get_empty_event_or_fail():
     event = Event.query.order_by(Event.id.desc()).first()
     if event.ticks.first():
@@ -287,11 +307,11 @@ def get_empty_event_or_fail():
 
 
 
-
+# sends a validation email to the team user
 def send_validation_email(u, team):
     msg = Message(subject="Confirm your registration in CTF team",
-                  sender=config.MAIL_DEFAULT_SENDER,
-                  reply_to=config.MAIL_REPLY_TO,
+                  sender="ctf@nohost.eu",
+                  reply_to="register@ctf.uber.space",
                   recipients=[u.email],
                   body="You were added to the CTF team *{}*. To confirm your membership use this URL"
                        " {}{}".format(
@@ -301,7 +321,7 @@ def send_validation_email(u, team):
                   )
     mail.send(msg)
 
-
+# if the vaildation email failed than there is a retry
 @app.route("/retry_validation/<user_id>/", methods=['POST'])
 @login_required
 def retry_validation(user_id):
@@ -332,6 +352,7 @@ def attend():
     if form.validate_on_submit():
         members_to_add = []
 
+        # checks if there is a tuple that is there from with the memeber
         def verify_member_form(tpl):
             if any(tpl):
                 if not all(tpl):
@@ -339,12 +360,15 @@ def attend():
                 return True
             return None
 
+        # checks if all the fields are filled mith input
         def check_3_tuple(tpl):
             tpl = tuple(t.strip() for t in tpl)
             if verify_member_form(tpl) is False:
                 flash("Fill all 3 fields for each member")
                 return False
                 #return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+            
+            # checks if a university is used  --> hard coded
             elif verify_member_form(tpl) is True:
                 if not tpl[0].endswith("@hs-albsig.de"): # FIXME
                     flash("Please use only university email addresses")
@@ -383,6 +407,7 @@ def attend():
             db_session.delete(m)
         db_session.commit()
 
+        # first checks if there are user registerd  then deletes
         for email, surname, forename in members_to_add:
             test_u = User.query.filter_by(email=email).first()
             if test_u is not None:
@@ -427,7 +452,7 @@ def attend():
 
 
 
-
+# logout from the user
 @app.route("/logout")
 @login_required
 def logout():
