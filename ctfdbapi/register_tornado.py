@@ -9,8 +9,7 @@ import pathlib, os
 
 import sys
 
-if not sys.platform == 'darwin':
-    os.chdir("/home/root/ctf_root/ctfdbapi/")
+os.chdir("/srv/ctf/ctfdbapi/")
 
 
 http_server = HTTPServer(WSGIContainer(app))

@@ -96,6 +96,19 @@
 - name: add iptables rules for wireguard
   include: wireguard.yml
 
+- name: Allow registration page access
+  iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: "{{ ansible_default_ipv4.interface }}"
+    protocol: tcp
+    match: tcp
+    destination_port: 80
+    jump: DNAT
+    to_destination: "10.38.1.1:4998"
+    comment: Redirect web traffic to web container
+  become: yes
+
 - name: include logged default reject rules
   include: default_action.yml chain=INPUT action=REJECT
 
@@ -186,6 +199,24 @@
     - "{{ service_ports }}"
     - [40, 41, 42]
 
+
+# connection to dashboard from teams
+- name: connection to dashboard from teams
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[1] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.38.1.1"
+    protocol: tcp
+    destination_port: 5000
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - [40, 41, 42]
+
+
 # Teamcontainer service ports UDP
 - name: Teamcontainer allow new service conections (UDP from inside)
   iptables:
@@ -201,6 +232,7 @@
     - "{{groups['ad_containers']}}"
     - "{{ service_ports }}"
     - [40, 41, 42]
+
 
 
 # Teamcontainer service ports UDP
