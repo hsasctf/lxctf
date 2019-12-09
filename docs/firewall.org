@@ -3,15 +3,15 @@ Iptables is used as firewall to secure the host system and control request forwa
 Please notice that ansible *configures your local firewall* if you install this in productive environment.
 
 ** Varaibles used in this readme
-- *<team-id>*, the id of the team taking part in the ctf
-- *<service-port>*, all ports ment for attackable services (can be specified in roles/firewall/vars/main.yml)
+- =<team-id>=, the id of the team taking part in the ctf
+- =<service-port>=, all ports ment for attackable services (can be specified in roles/firewall/vars/main.yml)
 
 ** Initial configurations
 In the beginning iptables is installed, if not present already.
 Ipv6 is disabled via sysctl to only allow ipv4 packages also ip-forwarding is enabled for ipv4.
 All rules in the INPUT, FORWARD and OUTPUT chain are *flushed*.
 
-The default policies for INPUT-/ FORWARD-chain are set to REJECT/ DROP, thus making them *whitelists*.
+The default policies for INPUT-/ FORWARD-chain are set to ACCEPT, but the default policy is REJECT/DROP in both cases, thus making them *whitelists*.
 
 ** Input chain
 The following packages are accepted:
@@ -21,13 +21,13 @@ The following packages are accepted:
 ** Forward chain
 The following packages are accepted:
 - TCP ESTABLISHED, RELATED
-- TCP SYN from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.40.<team-id>.0/24* port 22
-- TCP SYN from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.40.<team-id>.0/24* port <service-port>
-- UDP from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.40.<team-id>.0/24* port <service-port>
-- UDP from *10.40.<team-id>.0/24* to *10.42.<team-id>.1-10.42.<team-id>.5* port <service-port>
-- TCP SYN from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.39.<team-id>.0/24* port 22
-- TCP from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.38.<team-id>.0/24*
-- UDP from *10.42.<team-id>.1-10.42.<team-id>.5* to *10.38.<team-id>.0/24*
+- TCP SYN from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port 22
+- TCP SYN from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port =<service-port>=
+- UDP from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port =<service-port>=
+- UDP from =10.40.<team-id>.0/24= to =10.42.<team-id>.1-10.42.<team-id>.5= port =<service-port>=
+- TCP SYN from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.39.<team-id>.0/24= port 22
+- TCP from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.38.<team-id>.0/24=
+- UDP from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.38.<team-id>.0/24=
 
 ** Last steps
 Iptables is enabled via systemctl and the configuration is exported to  <ansible-path>/files/iptables.fw.

@@ -83,6 +83,9 @@
   become: True
 
 
+- name: add iptables rules for dns
+  include: dns.yml
+
 - name: add iptables rules for openvpn
   include: openvpn.yml
 
@@ -99,6 +102,38 @@
   iptables:
     chain: FORWARD
     ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+
+- name: forward from team VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "teambr{{ item|replace('team','')|int }}"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  with_items:
+    - "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+- name: forward from gameserver VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "gamebr"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  become: yes
+
+
+- name: forward from jeopardy VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "jeopbr1"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
     jump: ACCEPT
   become: yes
 
@@ -238,7 +273,6 @@
     - team254
 
 
-
 # Gamebridge
 - name: allow everything for gamebr
   iptables:
@@ -247,13 +281,52 @@
     dst_range: "10.38.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255"
     jump: ACCEPT
   become: True
-  with_items:
-    - "{{groups['ad_containers']}}"
-    - team254
+
+- name: allow service checking for gamebr
+  iptables:
+    chain: FORWARD
+    source: "10.38.1.0/24"
+    dst_range: "10.40.0.0/16"
+    jump: ACCEPT
+    ctstate: NEW
+  become: True
+
 
 - name: include logged default reject rules
   include: default_action.yml chain=FORWARD action=REJECT
 
+
+
+## POSTROUTING CHAIN
+
+- name: allow internet access for VMs
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.40.{{ hostvars[item]['team_num'] }}.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  with_items:
+    - "{{groups['ad_containers']}}"
+  become: yes
+
+- name: allow internet access for gameserver
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.38.1.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
+
+- name: allow internet access for jeopardy
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.39.1.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
 
 
 ## DEFAULT RULES
