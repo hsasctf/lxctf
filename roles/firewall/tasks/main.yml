@@ -246,9 +246,7 @@
     source: 10.38.1.1
     dst_range: 10.40.{{ item[0]|replace('team','')|int }}.1-10.40.{{ item[0]|replace('team','')|int }}.255
     destination_port: "{{ item[1]|int }}"
-    protocol: tcp
     ctstate: NEW
-    syn: match
     jump: ACCEPT
   become: True
   with_nested:
@@ -257,40 +255,29 @@
 
 
 # Jeopardy for each team
-- name: Jeopardy allow new ssh conections
+- name: Allow connections to jeopardy VM (wireguard)
   iptables:
     chain: FORWARD
     src_range: "10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5"
-    dst_range: "10.39.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255"
-    protocol: tcp
-    destination_port: 22
+    destination: "10.39.1.0/24"
     ctstate: NEW
-    syn: match
     jump: ACCEPT
   become: True
   with_items:
     - "{{groups['ad_containers']}}"
     - team254
 
-
-# Gamebridge
-- name: allow everything for gamebr
+- name: Allow connections to jeopardy VM (openvpn)
   iptables:
     chain: FORWARD
-    src_range: "10.42.{{ item|replace('team','')|int }}.1-10.42.{{ item|replace('team','')|int }}.5"
-    dst_range: "10.38.{{ item|replace('team','')|int }}.1-10.40.{{ item|replace('team','')|int }}.255"
-    jump: ACCEPT
-  become: True
-
-- name: allow service checking for gamebr
-  iptables:
-    chain: FORWARD
-    source: "10.38.1.0/24"
-    dst_range: "10.40.0.0/16"
-    jump: ACCEPT
+    source: "10.41.0.0/24"
+    destination: "10.39.1.0/24"
     ctstate: NEW
+    jump: ACCEPT
   become: True
-
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
 
 - name: include logged default reject rules
   include: default_action.yml chain=FORWARD action=REJECT
