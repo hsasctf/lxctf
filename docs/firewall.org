@@ -17,10 +17,12 @@ The default policies for INPUT-/ FORWARD-chain are set to ACCEPT, but the defaul
 The following packages are accepted:
 - TCP ESTABLISHED, RELATED on any port
 - TCP SYN on port 22
+- UDP 40254, 40001, 40002, ... (zero padded team number) (OpenVPN)
+- UDP 42254, 42001, 42002, ... (zero padded team number) (wireguard)
 
 ** Forward chain
 The following packages are accepted:
-- TCP ESTABLISHED, RELATED
+- UDP/TCP ESTABLISHED, RELATED
 - TCP SYN from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port 22
 - TCP SYN from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port =<service-port>=
 - UDP from =10.42.<team-id>.1-10.42.<team-id>.5= to =10.40.<team-id>.0/24= port =<service-port>=
