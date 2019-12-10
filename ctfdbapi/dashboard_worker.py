@@ -7,7 +7,7 @@ import time
 import redis
 import requests
 
-from ctfdbapi.config import API_SECRET, API_BASE_URL
+from config import API_SECRET, API_BASE_URL
 
 REFRESH_INTERVAL = 1  # seconds
 

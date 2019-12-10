@@ -7,8 +7,8 @@ import json
 
 import sys
 
-from ctfdbapi.db.database import db_session
-from ctfdbapi.db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
+from db.database import db_session
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 
 
 SERVICES_PATH = "../services/2019/"

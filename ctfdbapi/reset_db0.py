@@ -1,11 +1,11 @@
 import contextlib
 from datetime import datetime
 
-from ctfdbapi.db.database import db_session
+from db.database import db_session
 
 
-from ctfdbapi.datetime import datetime, timedelta
-from ctfdbapi.db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun, \
+from datetime import datetime, timedelta
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun, \
     TeamScore, TeamServiceState
 
 

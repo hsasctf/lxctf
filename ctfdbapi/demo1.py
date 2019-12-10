@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 import os
 import sys
 
-from ctfdbapi.db.database import db_session
-from ctfdbapi.db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
+from db.database import db_session
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 from reset_db1 import combine_service_infos, create_all_services_and_scripts
 
@@ -26,18 +26,24 @@ logger.addHandler(consoleHandler)
 logger.setLevel(logging.DEBUG)
 
 
+# löschen bereits vorhandenen Demos
 def delete_prev_demos():
     Event.query.filter_by(is_demo=1).delete()
     db_session.commit()
 
-
+# erstellen einer neuen Demo bzw. eines neuen Event
 def new_demo_event(ad_start_minutes=5):
     event = Event()
+    # festlegen von dem startdatum der Registration
     event.registration_start = datetime.now() - timedelta(days=14)
+    # festlegen von dem enddatum der Registartion
     event.registration_end = datetime.now() - timedelta(days=2)
+    # Start des Events
     event.start = datetime.now()
+    # End des Events
     event.end = datetime.now() + timedelta(hours=12)
     event.attack_defense_start = datetime.now() + timedelta(minutes=ad_start_minutes)
+    # setzt den demo wert auf 1 für spätere um es wieder zu löschen
     event.is_demo = 1
     db_session.add(event)
     db_session.commit()
@@ -46,6 +52,7 @@ def new_demo_event(ad_start_minutes=5):
 
 def assign_teams(event):
     teams = list(Team.query.all())
+    # hier werden die anzahl der verwendeten Teams bestimmt. --> zu ändern ist [:?]
     for i, t in enumerate(teams[:3], start=1):
         a = AttendingTeam()
         a.event = event
@@ -63,10 +70,12 @@ def assign_teams(event):
         logger.info(
             ">>> Team '{}' should be given the SSH private key file roles/infrastructure_lxd/files/team_keys/team{}".format(
                 t.team_name, i))
+    # auch hier muss [:?] geändert werden
     return teams[:3]
 
 
 def check_rc(name, rc):
+    # tmux(terminal emulator) schließt sessions
     if rc != 0:
         logger.error("Error starting {}, try `tmux kill-session -t {}`".format(name, name))
         sys.exit(1)

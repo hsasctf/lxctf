@@ -2,7 +2,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 
-from ctfdbapi.app_register import app
+from app_register import app
 import pathlib, os
 
 

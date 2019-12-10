@@ -7,8 +7,8 @@ import random
 from datetime import datetime, timedelta
 from time import sleep, time
 
-from ctfdbapi.db.database import db_session
-from ctfdbapi.db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
+from db.database import db_session
+from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
 
 TICK_TIME_IN_SECONDS = 180  # SET TO 180
