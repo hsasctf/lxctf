@@ -31,8 +31,8 @@
       config:
         ipv6.address: "none"
         ipv4.address: "10.38.1.254/24"
-        ipv4.nat: "true"
-        ipv4.firewall: "true" # TODO
+        ipv4.nat: "{{ lxd_auto_nat }}"
+        ipv4.firewall: "{{ lxd_auto_firewall }}"
     body_format: json
     headers:
       Content-Type: "application/json"

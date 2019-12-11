@@ -6,32 +6,10 @@
     raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
     become: true
 
-- hosts: ctfserver
-  tasks:
-
-
-    - name: install ufw
-      apt:
-        name: ufw
-      become: yes
-
-    - name: allow ssh (anti lockout rule)
-      ufw: rule=allow port={{ansible_ssh_port}} proto=tcp
-      become: True
-
-
-    - name: enable UFW
-      command: ufw --force enable
-      become: True
-
-    - name: restarting ufw
-      service:
-        name: ufw
-        state: restarted
-      become: True
 
 - hosts: ctfserver
   roles:
+    - firewall
     - infrastructure_lxd
     - vpn
   tasks:

@@ -1,0 +1,6 @@
+---
+# vars file for vpn
+service_ports:
+# testport
+  - 5555
+  - 5001

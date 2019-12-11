@@ -12,38 +12,10 @@
   apt: name=daemontools-run state=latest
   become: True
 
-- name: allow openvpn ports
-  ufw:
-    rule: allow
-    port: 40{{ '%03d'|format(hostvars[item]['team_num']|int) }}
-    proto: udp
-  become: True
-  with_items:
-    - "{{groups['ad_containers']}}"
-
-- name: allow openvpn ports
-  ufw:
-    rule: allow
-    port: 40254
-    proto: udp
-  become: True
-
-
-
-#
-#
-# # - name: allow ssh
-# #   ufw: rule=allow port={{ansible_ssh_port}} proto=tcp
-# #
-# # - name: enable ufw
-# #   ufw: logging=on state=reloaded
-#
-#
-# 
-#
 
 - name: apt-get update
   apt: update_cache=yes cache_valid_time=3600
+  become: yes
 
 - name: install openvpn
   apt: name=openvpn state=present
@@ -74,17 +46,6 @@
     - team254
   become: True
 
-# - name: Fetch ta.key
-#   fetch:
-#     src: "/tmp/ta-{{ item }}.key"
-#     dest: "{{ role_path }}/files/vpn_tempfiles/{{ item }}/ta.key"
-#     flat: True
-#     fail_on_missing: True
-#     validate_checksum: True
-#   become: True
-#   with_items:
-#     - "{{groups['ad_containers']}}"
-
 
 - name: download ta.key
   slurp:
@@ -104,17 +65,6 @@
   with_together:
     - "{{ groups['ad_containers'] + ['team254',] }}"
     - "{{ tas.results }}"
-
-
-
-# - file: path="/tmp/ta-{{ item }}.key" state=absent
-#   with_items:
-#     - "{{groups['ad_containers']}}"
-#   become: True
-
-
-
-#----- render config templates -----
 
 
 - name: create vpn_tempfiles directory
@@ -270,8 +220,3 @@
    - "{{groups['ad_containers']}}"
    - team254
   become: True
-
-
-#-------iptables----------
-
-# TODO iptables routing
