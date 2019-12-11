@@ -2,14 +2,11 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from app import app
-import pathlib, os
+import os
 
 
 
-import sys
-
-if not sys.platform == 'darwin':
-    os.chdir("/opt/ctfdbapi/")
+os.chdir("/srv/ctf/ctfdbapi/")
 
 
 http_server = HTTPServer(WSGIContainer(app))

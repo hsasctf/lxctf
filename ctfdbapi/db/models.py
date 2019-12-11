@@ -59,7 +59,6 @@ class AttendingTeam(ModelBase):
 class Event(ModelBase):
     __tablename__ = "event"
 
-    # FIXME mysql igngores this
     __table_args__ = (
         CheckConstraint('registration_start < registration_end', name='event_check_regstart_lt_regend'),
         CheckConstraint('registration_end < start', name='event_check_regstart_lt_start'),

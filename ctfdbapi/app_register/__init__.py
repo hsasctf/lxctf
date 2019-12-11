@@ -90,7 +90,10 @@ def faq():
 
 @app.route("/")
 def index():
-    event = get_empty_event_or_fail()
+    try:
+        event = get_empty_event_or_fail()
+    except:
+        return "Database error, there is no empty event in database (event without ticks)"
     return render_template("index.html", event=event)
 
 @app.route("/validation_unregister/<token>/")
@@ -281,6 +284,8 @@ def first_empty_subnet():
 
 def get_empty_event_or_fail():
     event = Event.query.order_by(Event.id.desc()).first()
+    if event is None:
+        raise Exception("Cannot use a database without event.")
     if event.ticks.first():
         raise Exception("Cannot use an event with existing ticks. Create a new event.")
     return event

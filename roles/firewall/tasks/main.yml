@@ -96,7 +96,15 @@
 - name: add iptables rules for wireguard
   include: wireguard.yml
 
-- name: Allow registration page access
+
+
+- name: include logged default reject rules
+  include: default_action.yml chain=INPUT action=REJECT
+
+
+## PREROUTING CHAIN
+
+- name: Allow registration page access via port 80 of default interface
   iptables:
     table: nat
     chain: PREROUTING
@@ -108,9 +116,6 @@
     to_destination: "10.38.1.1:4998"
     comment: Redirect web traffic to web container
   become: yes
-
-- name: include logged default reject rules
-  include: default_action.yml chain=INPUT action=REJECT
 
 
 ## FORWARD CHAIN
@@ -304,6 +309,20 @@
   with_nested:
     - "{{groups['ad_containers']}}"
     - [40, 41, 42]
+
+- name: Registration Forward to destination NAT
+  iptables:
+    chain: FORWARD
+    destination: "10.38.1.1"
+    destination_port: "4998"
+    protocol: tcp
+    ctstate: NEW
+    in_interface: "{{ ansible_default_ipv4.interface }}"
+    out_interface: "gamebr"
+    jump: ACCEPT
+  become: True
+
+
 
 - name: include logged default reject rules
   include: default_action.yml chain=FORWARD action=REJECT
