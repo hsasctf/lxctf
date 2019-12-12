@@ -5,6 +5,7 @@ language: python
 env:
  - LINT=1
  - IMAGE="ubuntu:xenial"
+ - IMAGE="ubuntu:bionic"
 script:
   - if [ ! -z ${LINT} ]; then echo "Hello, world!"; fi
 # setup dependencies here to save time on simpler test environments
@@ -12,7 +13,8 @@ script:
 # sudo back to ourself to activate lxd group membership
   - if [ ! -z ${IMAGE} ]; then
       sudo apt remove -y --purge lxd lxd-client;
-      sudo apt install -y -t xenial-backports lxd;
+      [ $(lsb_release -c -s) == "xenial" ] && sudo apt install -y -t xenial-backports lxd;
+      [ $(lsb_release -c -s) == "bionic" ] && sudo apt install -y lxd;
       sudo apt install -y zfsutils-linux;
       sudo lxd activateifneeded;
       sudo lxd waitready;

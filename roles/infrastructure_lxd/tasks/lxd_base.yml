@@ -9,6 +9,7 @@
 - apt_repository:
     repo: deb http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse
     state: present
+  when: ansible_distribution_release == "xenial"
   become: True
 
 - name: Update the repository cache and update package "lxd" to latest version using default release xenial-backport
@@ -17,18 +18,20 @@
     state: latest
     default_release: xenial-backports
     update_cache: yes
+  when: ansible_distribution_release == "xenial"
   become: True
 
-#
-#- name: install LXD via snap
-#  snap:
-#    name: lxd
-#  become: True
+- name: Update the repository cache and update package "lxd" to latest version using bionic
+  apt:
+    name: lxd
+    state: latest
+    update_cache: yes
+  when: ansible_distribution_release == "bionic"
+  become: True
 
-#- name: perform dist-upgrade
-#  apt: upgrade=dist update_cache=yes
-#  become: True
-
+- name: fail when neither xenial nor bionic
+  fail:
+  when: ansible_distribution_release not in ['xenial', 'bionic']
 
 - name: install dependencies
   apt:
