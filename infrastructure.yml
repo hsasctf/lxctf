@@ -9,6 +9,7 @@
 
 - hosts: ctfserver
   roles:
+    - lxd_production
     - firewall
     - infrastructure_lxd
     - vpn

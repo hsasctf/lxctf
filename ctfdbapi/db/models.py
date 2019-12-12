@@ -18,7 +18,7 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql.ddl import CreateTable
 
 from config import SQLALCHEMY_DATABASE_URI
-from hash_passwort import generate_password
+from manage_hash_password import generate_password
 from .database import Base
 
 from hashlib import sha512
