@@ -1,0 +1,419 @@
+---
+# tasks file for firewall
+
+## Installation
+- name: install dependencies
+  apt: name="{{ item }}" state=present update_cache=yes cache_valid_time=3600
+  loop:
+    - iptables
+    - iptables-persistent
+    - netfilter-persistent
+  become: True
+
+
+
+## Firewall configuration
+# Disable ipv6
+- name: disable ipv6 in the host kernel
+  shell: sudo sysctl net.ipv6.conf.all.disable_ipv6=1
+
+
+# Flush the ruleset
+- name: iptables flush filter
+  iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD', 'OUTPUT' ]
+  become: yes
+
+- name: iptables flush nat
+  iptables:
+    table: nat
+    chain: '{{ item }}'
+    flush: yes
+  with_items: [ 'INPUT', 'OUTPUT', 'PREROUTING', 'POSTROUTING' ]
+  become: yes
+
+
+## INPUT CHAIN
+
+- name: Allow icmp
+  iptables:
+    chain: INPUT
+    protocol: icmp
+    jump: ACCEPT
+  become: yes
+
+
+# Allow established and related
+- name: Allow related and established connections
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+# Allow vagrant NFS mounts when using vagrant
+- name: Allow vagrant NFS mounts when using vagrant
+  iptables:
+    chain: INPUT
+    protocol: udp
+    source: 127.0.0.1
+    destination: 127.0.0.1
+    destination_port: 111
+    jump: ACCEPT
+  become: True
+  when: in_vagrant is defined
+
+# Allow on localhost
+- name: Allow on localhost
+  iptables:
+    chain: INPUT
+    source: 127.0.0.1
+    destination: 127.0.0.1
+    in_interface: lo
+    jump: ACCEPT
+  become: True
+
+# SSH for maintainance
+- name: Host allow new ssh conections
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 22
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+
+
+- name: add iptables rules for dns
+  include: dns.yml
+
+- name: add iptables rules for openvpn
+  include: openvpn.yml
+
+- name: add iptables rules for wireguard
+  include: wireguard.yml
+
+
+
+- name: include logged default reject rules
+  include: default_action.yml chain=INPUT action=REJECT
+
+
+## PREROUTING CHAIN
+
+- name: Allow registration page access via port 80 of default interface
+  iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: "{{ ansible_default_ipv4.interface }}"
+    protocol: tcp
+    match: tcp
+    destination_port: 80
+    jump: DNAT
+    to_destination: "10.38.1.1:4998"
+    comment: Redirect web traffic to web container
+  become: yes
+
+
+## FORWARD CHAIN
+# Allow established and related
+- name: Allow related and established connections
+  iptables:
+    chain: FORWARD
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+- name: Allow icmp
+  iptables:
+    chain: FORWARD
+    protocol: icmp
+    jump: ACCEPT
+  become: yes
+
+- name: forward from team VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "teambr{{ item|replace('team','')|int }}"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  with_items:
+    - "{{ groups['ad_containers'] }}"
+  become: yes
+
+
+- name: forward from gameserver VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "gamebr"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  become: yes
+
+
+- name: forward from jeopardy VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "jeopbr1"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  become: yes
+
+
+
+## Hardcoded teammembers (no necessarity to do otherwise --> each team could create own local subnets)
+# Teamcontainer
+- name: Teamcontainer allow new ssh conections, from OpenVPN (41) and from wireguard (42)
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[1] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    protocol: tcp
+    destination_port: 22
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - [41, 42]
+
+
+
+# Temcontainer service ports TCP
+- name: Teamcontainer allow new service conections (TCP)
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
+    protocol: tcp
+    destination_port: "{{ item[2]|int }}"
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+    - [40, 41, 42]
+
+
+# connection to dashboard from teams
+- name: connection to dashboard from teams
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[1] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.38.1.1"
+    protocol: tcp
+    destination_port: 5000
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - [40, 41, 42]
+
+
+# Teamcontainer service ports UDP
+- name: Teamcontainer allow new service conections (UDP from inside)
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
+    protocol: udp
+    destination_port: "{{ item[2]|int }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+    - [40, 41, 42]
+
+
+
+# Teamcontainer service ports UDP
+- name: Teamcontainer allow new service conections (UDP from inside)
+  iptables:
+    chain: FORWARD
+    source: "10.40.{{ item[1]|replace('team','')|int }}.0/24"
+    destination: "10.{{ item[3] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    protocol: udp
+    destination_port: "{{ item[2]|int }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+    - [40, 41, 42]
+
+
+# Admin connectionss
+- name: Allow connections to everywhere from admin VPN
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item }}.254.0/24"
+    destination: "!10.{{ item }}.254.0/24"
+    jump: ACCEPT
+  become: True
+  with_items:
+    - [40, 41, 42]
+
+# Gameserver(Scorebot) to team VMs
+- name: Gameserver(Scorebot) to team VMs (TCP)
+  iptables:
+    chain: FORWARD
+    source: 10.38.1.1
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    destination_port: "{{ item[1]|int }}"
+    protocol: tcp
+    ctstate: NEW
+    syn: match
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+
+- name: Gameserver(Scorebot) to team VMs (TCP)
+  iptables:
+    chain: FORWARD
+    source: 10.38.1.1
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.0/24"
+    destination_port: "{{ item[1]|int }}"
+    protocol: udp
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+
+# Jeopardy for each team
+- name: Allow connections to jeopardy VM (wireguard/openvpn/vm)
+  iptables:
+    chain: FORWARD
+    source: "10.{{ item[1] }}.{{ item[0]|replace('team','')|int }}.0/24"
+    destination: "10.39.1.0/24"
+    ctstate: NEW
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - [40, 41, 42]
+
+- name: Registration Forward to destination NAT
+  iptables:
+    chain: FORWARD
+    destination: "10.38.1.1"
+    destination_port: "4998"
+    protocol: tcp
+    ctstate: NEW
+    in_interface: "{{ ansible_default_ipv4.interface }}"
+    out_interface: "gamebr"
+    jump: ACCEPT
+  become: True
+
+
+
+- name: include logged default reject rules
+  include: default_action.yml chain=FORWARD action=REJECT
+
+
+
+## POSTROUTING CHAIN
+
+- name: allow internet access for VMs
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.40.{{ hostvars[item]['team_num'] }}.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  with_items:
+    - "{{groups['ad_containers']}}"
+  become: yes
+
+- name: allow internet access for gameserver
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.38.1.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
+
+- name: allow internet access for jeopardy
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.39.1.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
+
+
+## DEFAULT RULES
+# Set the INPUT policy to accept
+- name: Set the policy for the INPUT chain to ACCEPT
+  iptables:
+    chain: INPUT
+    policy: ACCEPT
+  become: yes
+
+# Set the OUTPUT policy to accept
+- name: Set the policy for the OUTPUT chain to ACCEPT
+  iptables:
+    chain: OUTPUT
+    policy: ACCEPT
+  become: yes
+
+# Set the FORWARD policy to drop
+- name: Set the policy for the FORWARD chain to DROP
+  iptables:
+    chain: FORWARD
+    policy: ACCEPT
+  become: yes
+
+
+
+## Additional settings
+# Enable ipv4 Forwarding
+- name: enable ipv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+  become: yes
+
+
+- name: persist rules (save)
+  shell: netfilter-persistent save
+  become: yes
+
+- name: persist rules (reload)
+  shell: netfilter-persistent reload
+  become: yes
+
+- name: enable netfilter-persistent
+  systemd:
+    name: netfilter-persistent
+    enabled: yes
+    state: started
+  become: yes
+
+
+# Save the configuration to a file
+- name: fetch the iptables config for reference
+  fetch:
+    src: /etc/iptables/rules.v4
+    dest: "{{ role_path }}/files/rules.v4"
+  become: yes

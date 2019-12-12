@@ -1,0 +1,35 @@
+- name: allow DNS for networks
+  iptables:
+    chain: INPUT
+    protocol: "{{ item[0] }}"
+    destination_port: 53
+    in_interface: "teambr{{ item[1]|replace('team','')|int }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - ['udp', 'tcp']
+    - "{{ groups['ad_containers'] }}"
+
+- name: allow DNS for gameserver
+  iptables:
+    chain: INPUT
+    protocol: "{{ item[0] }}"
+    destination_port: 53
+    in_interface: "{{ item[1] }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - ['udp', 'tcp']
+    - ['gamebr']
+
+- name: allow DNS for jeopardy
+  iptables:
+    chain: INPUT
+    protocol: "{{ item[0] }}"
+    destination_port: 53
+    in_interface: "{{ item[1] }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - ['udp', 'tcp']
+    - ['jeopbr1']

@@ -1,2 +1,6 @@
 ---
 # vars file for create_lxd_containers
+
+# use strings here:
+lxd_auto_nat: "false"
+lxd_auto_firewall: "false"
