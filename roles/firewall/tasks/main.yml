@@ -134,6 +134,8 @@
     chain: FORWARD
     protocol: icmp
     jump: ACCEPT
+  tags:
+    - exclude_travis
   become: yes
 
 - name: forward from team VM to default interface (internet access)
