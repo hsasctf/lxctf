@@ -10,7 +10,7 @@ import sys
 from db.database import db_session
 from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
-from reset_db1 import combine_service_infos, create_all_services_and_scripts
+from manage_add_services import combine_service_infos, create_all_services_and_scripts
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger(__name__)
