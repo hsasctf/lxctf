@@ -115,6 +115,8 @@
     jump: DNAT
     to_destination: "10.38.1.1:4998"
     comment: Redirect web traffic to web container
+  tags:
+    - exclude_travis
   become: yes
 
 

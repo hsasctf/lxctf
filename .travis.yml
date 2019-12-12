@@ -25,8 +25,8 @@ script:
       sudo ansible-galaxy install -r requirements.yml;
       sudo pip install ansible==2.8.7;
       ./reinit_project.sh;
-      sudo ansible-playbook -i inventories/ctf.py site.yml;
+      sudo ansible-playbook --skip-tags "exclude_travis" -i inventories/ctf.py site.yml;
       sleep 180;
-      sudo ansible-playbook -i inventories/ctf.py site.yml;
+      sudo ansible-playbook --skip-tags "exclude_travis" -i inventories/ctf.py site.yml;
     fi
 
