@@ -19,11 +19,9 @@
     src: config.j2
     dest: "/etc/supervisor/conf.d/register.conf"
   become: yes
-  when: supervisor
 
 - name: restart service
   supervisorctl:
     name: "register"
     state: restarted
   become: yes
-  when: supervisor
