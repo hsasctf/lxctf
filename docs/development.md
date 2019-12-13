@@ -4,10 +4,9 @@
 
 
 Consists of 1 VM hosting multiple LXD containers
-- 172.16.17.10 ctfserver running LXD and OpenVPN servers
+- ctfserver running LXD and OpenVPN servers
     - LXD container `web` on 10.38.1.1: runs the gameserver (Scorebot, Gamebot, Dashboard)
     - LXD containers `team1` -- `team253`, with IP addresses 10.40.1-253.1: containers für teams
-
 
 
 ### Vagrant Commands
@@ -49,23 +48,6 @@ EOF
 
 1. Set the environment variable for Vagrant `export VAGRANT_DEFAULT_PROVIDER="libvirt"`
 
-
-#### Using both
-
-##### Switch from VirtualBox to libvirt
-
-1. `vagrant destroy -f`
-1. Delete the Host Network in Global Tools in VirtualBox
-
-![Delete this network to use libvirt instead of VirtualBox](https://i.imgur.com/SmBmtCD.png)
-
-##### Switch from libvirt to VirtualBox
-
-1. Install Virtual Machine Manager
-1. Edit -> Connection Details -> Network Interfaces
-1. Delete the `ctfa0` network
-
-![Delete the `ctfa0` network to use VirtualBox instead of libvirt](https://i.imgur.com/y0n7wHb.png)
 
 #### Remaining steps
 
