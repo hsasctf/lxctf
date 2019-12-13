@@ -44,7 +44,6 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "ctfserver" do |machine|
         machine.vm.hostname = "ctfserver"
-        machine.vm.network "private_network", ip: "172.16.17.10"
         if ctfdev_config['provider'] == 'libvirt'
 
             machine.vm.provider :libvirt do |lv|

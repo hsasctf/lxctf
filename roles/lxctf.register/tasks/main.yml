@@ -1,0 +1,27 @@
+---
+# tasks file for lxctf.register
+
+- name: install supervisor
+  apt:
+    name: supervisor
+    state: latest
+  become: true
+
+- name: start supervisor
+  service:
+    name: supervisor
+    state: started
+  become: yes
+
+
+- name: copy supervisor config for service
+  template:
+    src: config.j2
+    dest: "/etc/supervisor/conf.d/register.conf"
+  become: yes
+
+- name: restart service
+  supervisorctl:
+    name: "register"
+    state: restarted
+  become: yes

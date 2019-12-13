@@ -12,6 +12,7 @@ roles/infrastructure_lxd/files/lxd.key
 roles/infrastructure_lxd/files/lxd.cert
 roles/infrastructure_lxd/files/jeop_keys/
 roles/infrastructure_lxd/files/team_keys/
+roles/firewall/files/rules.v4/
 
 services/2019/status_system/tmp/*
 
@@ -253,3 +254,6 @@ $RECYCLE.BIN/
 
 # Log files (if you are creating logs in debug mode, uncomment this)
 # *.logs
+
+# Orgfiles will be exported to markdown
+*.org

@@ -18,7 +18,7 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql.ddl import CreateTable
 
 from config import SQLALCHEMY_DATABASE_URI
-from hash_passwort import generate_password
+from manage_hash_password import generate_password
 from .database import Base
 
 from hashlib import sha512
@@ -59,7 +59,6 @@ class AttendingTeam(ModelBase):
 class Event(ModelBase):
     __tablename__ = "event"
 
-    # FIXME mysql igngores this
     __table_args__ = (
         CheckConstraint('registration_start < registration_end', name='event_check_regstart_lt_regend'),
         CheckConstraint('registration_end < start', name='event_check_regstart_lt_start'),

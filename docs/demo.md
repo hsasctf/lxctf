@@ -16,5 +16,4 @@ python3 demo1.py <minutes until AD starts>
 Important
 
 - For every question: Enter = Yes
-- Use Firefox for demo
 - ctfdbapi needs 2-3 minutes to start completely
