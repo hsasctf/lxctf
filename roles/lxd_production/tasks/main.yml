@@ -1,0 +1,35 @@
+---
+# tasks file for lxd_production
+
+- name: configure limits in /etc/security/limits.conf
+  blockinfile:
+    path: /etc/security/limits.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertbefore: "BOF"
+    block: |
+      *        soft nofile 1048576
+      *        hard nofile 1048576
+      root     soft nofile 1048576
+      root     hard nofile 1048576
+      *        soft memlock unlimited
+      *        hard memlock unlimited
+  become: yes
+
+
+- name: set sysctl values for LXD production setup
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { name: 'fs.inotify.max_queued_events', value: '1048576' }
+    - { name: 'fs.inotify.max_user_instances', value: '1048576' }
+    - { name: 'fs.inotify.max_user_watches', value: '1048576' }
+    - { name: 'vm.max_map_count', value: '262144' }
+    - { name: 'kernel.dmesg_restrict', value: '1' }
+    - { name: 'net.ipv4.neigh.default.gc_thresh3', value: '8192' }
+    - { name: 'net.ipv6.neigh.default.gc_thresh3', value: '8192' }
+    - { name: 'kernel.keys.maxkeys', value: '2000' }
+  become: yes
+
+# TODO reboot

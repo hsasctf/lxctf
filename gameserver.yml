@@ -13,6 +13,8 @@
     - name: Install packages
       apt:
         name:
+          - python-yaml # needed for scorebot
+          - python3-yaml
           - redis-server
           - python3-cryptography
           - python3-pip
@@ -28,16 +30,21 @@
 
 - hosts: web
   tasks:
-    - user:
+    - name: add user ctf
+      user:
         name: ctf
       become: True
+
+    - name: Set authorized key taken from file for ctf user
+      authorized_key:
+        user: ctf
+        state: present
+        key: "{{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}"
+      become: yes
 
     - name: set timezone to UTC
       timezone:
         name: UTC
-      become: yes
-
-    - file: path=/srv/ctf state=directory
       become: yes
 
     - name: sync project to container when not dev system
@@ -140,10 +147,6 @@
       become: yes
 
 
-
-
-
-
     - name: set owner/group for service files
       file:
         path: "/srv/ctf"
@@ -155,4 +158,5 @@
 - hosts: web
   roles:
     - mariadb
+    - lxctf.register
   #- scorebot_deps_2019

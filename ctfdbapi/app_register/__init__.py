@@ -1,40 +1,20 @@
-import random
-import string
-
 import flask
-from flask import Flask, json, jsonify, request
-from flask import render_template
 from flask_mail import Message, Mail
-from sqlalchemy import func
 
 from app_register.utils import is_safe_url
-from db.database import db_session
-from flask_httpauth import HTTPBasicAuth
 
-from db.models import Team
-from flask import Blueprint, render_template, abort, request, jsonify, current_app
-from flask import flash
-from flask import json
-from jinja2 import TemplateNotFound
-from hashlib import sha512
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from flask import Flask, session, request, flash, url_for, redirect, render_template, abort, g
 
 from db.database import db_session
-from db.models import TeamScore, AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, \
-    Tick, TeamServiceState, TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
+from db.models import AttendingTeam, Event, Team, Member, User
 
-from hashlib import sha512
-
-import redis
-import requests
 from app_register import config
-from sqlalchemy.orm import Query
 from datetime import datetime
 from ipaddress import ip_address, ip_network
 
 from app_register.forms import RegistrationForm, LoginForm, PasswordResetForm, UnregisterForm, AttendForm
-from hash_passwort import generate_password
+from manage_hash_password import generate_password
 
 app = Flask(__name__, template_folder='templates', static_url_path="/static")
 
@@ -90,7 +70,10 @@ def faq():
 
 @app.route("/")
 def index():
-    event = get_empty_event_or_fail()
+    try:
+        event = get_empty_event_or_fail()
+    except:
+        return "Database error, there is no empty event in database (event without ticks)"
     return render_template("index.html", event=event)
 
 @app.route("/validation_unregister/<token>/")
@@ -126,8 +109,8 @@ def unregister():
         db_session.commit()
 
         msg = Message(subject="Unregister",
-                      sender="ctf@nohost.eu",
-                      reply_to="register@ctf.uber.space",
+                      sender=config.MAIL_DEFAULT_SENDER,
+                      reply_to=config.MAIL_REPLY_TO,
                       recipients=[user.email],
                       body="You requested your deletion from all CTF teams. To confirm use this URL"
                            " {}{}".format(
@@ -231,8 +214,8 @@ def validation_passwordreset(team_id, hash):
             db_session.commit()
 
             msg = Message(subject="Password Reset",
-                          sender="ctf@nohost.eu",
-                          reply_to="register@ctf.uber.space",
+                          sender=config.MAIL_DEFAULT_SENDER,
+                          reply_to=config.MAIL_REPLY_TO,
                           recipients=[u.email for u in users],
                           body="Password for your team was set to: {}".format(pw)
                           )
@@ -257,8 +240,8 @@ def passwordreset():
         users = [m.user for m in members]
 
         msg = Message(subject="Password Reset",
-                      sender="ctf@nohost.eu",
-                      reply_to="register@ctf.uber.space",
+                      sender=config.MAIL_DEFAULT_SENDER,
+                      reply_to=config.MAIL_REPLY_TO,
                       recipients=[u.email for u in users],
                       body="Please validate your password reset request at {}{}".format(
                         config.URL_BASE,
@@ -281,6 +264,8 @@ def first_empty_subnet():
 
 def get_empty_event_or_fail():
     event = Event.query.order_by(Event.id.desc()).first()
+    if event is None:
+        raise Exception("Cannot use a database without event.")
     if event.ticks.first():
         raise Exception("Cannot use an event with existing ticks. Create a new event.")
     return event
@@ -290,8 +275,8 @@ def get_empty_event_or_fail():
 
 def send_validation_email(u, team):
     msg = Message(subject="Confirm your registration in CTF team",
-                  sender="ctf@nohost.eu",
-                  reply_to="register@ctf.uber.space",
+                  sender=config.MAIL_DEFAULT_SENDER,
+                  reply_to=config.MAIL_REPLY_TO,
                   recipients=[u.email],
                   body="You were added to the CTF team *{}*. To confirm your membership use this URL"
                        " {}{}".format(

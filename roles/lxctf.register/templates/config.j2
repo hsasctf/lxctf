@@ -1,0 +1,13 @@
+[program:register]
+directory=/opt/ctfdbapi
+command=python3 /opt/ctfdbapi/register_tornado.py
+autostart=true
+autorestart=true
+startretries=2000
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/ctf/register-err.log
+stdout_logfile=/var/log/ctf/register-out.log
+user=ctf
+killasgroup=true
+stopasgroup=true

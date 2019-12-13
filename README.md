@@ -1,15 +1,25 @@
+[![Build Status](https://travis-ci.com/hsasctf/lxctf.svg?branch=master)](https://travis-ci.com/hsasctf/lxctf)
+
 # lxctf
 
-An Ansible project to automate installation and configuration of an Attack/Defense CTF framework (based of iCTF concept and code).
+Ansible project to automate installation and configuration of an Attack/Defense CTF framework (based of iCTF concept and code).
 
-## How to use repo
+## How to use the development environment
 
 ```
 git clone URL
 git submodule init
 git submodule update
+./reinit_project.sh
 vagrant up
 vagrant provision
+```
+
+## Upgrade
+
+```
+git pull master
+git submodule update
 ```
 
 ## Components

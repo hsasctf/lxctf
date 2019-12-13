@@ -2,7 +2,6 @@ from functools import wraps
 
 from sqlalchemy import func
 
-from flask_httpauth import HTTPBasicAuth
 
 from flask import Blueprint, render_template, abort, request, jsonify, current_app
 from flask import json
@@ -16,12 +15,10 @@ from app.api import verify_flag
 from hashlib import sha512
 
 import redis
-import ipaddress
 
 web = Blueprint('web', __name__,
                 template_folder='templates')
 
-auth = HTTPBasicAuth()
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 

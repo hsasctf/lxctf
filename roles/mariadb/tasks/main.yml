@@ -9,6 +9,7 @@
   become: True
   retries: 10
   delay: 10
+  when: ansible_distribution_release == "xenial"
 
 - name: Add repository key to the system
   apt_key: keyserver=keyserver.ubuntu.com id={{ item }}
@@ -16,6 +17,7 @@
   with_items:
     - '0xcbcb082a1bb943db'
     - '0xF1656F24C74CD1D8'
+  when: ansible_distribution_release == "xenial"
 
 
   
@@ -43,7 +45,7 @@
     - mysql
 
 
-
+- debug: msg="{{ mysql_root_password }}"
 # secure installation tasks
 
 - name: update mysql root password for all root accounts
@@ -183,6 +185,19 @@
   when: db_created.changed and not dump_file.stat.exists
   become: yes
 
+- name: check if there is event table
+  shell: mysql -e 'select 1 from ctf.events;' -u root -p"{{ mysql_root_password }}"
+  register: event_table
+  failed_when: event_table.rc not in [0, 1]
+
+- name: create db model if there is no event table
+  shell: python3 db/database.py
+  args:
+    chdir: /srv/ctf/ctfdbapi/
+  environment:
+    PYTHONPATH: "/srv/ctf/ctfdbapi/"
+  when: event_table.rc == 1
+  become: yes
 
 - name: Install config file for network settings (bind address)
   template:

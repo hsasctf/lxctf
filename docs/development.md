@@ -3,12 +3,10 @@
 ## Development Environment
 
 
-Consists of 2 VMs
-- 172.16.17.5 controller running ansible
-- 172.16.17.10 ctfserver running LXD and OpenVPN servers
+Consists of 1 VM hosting multiple LXD containers
+- ctfserver running LXD and OpenVPN servers
     - LXD container `web` on 10.38.1.1: runs the gameserver (Scorebot, Gamebot, Dashboard)
     - LXD containers `team1` -- `team253`, with IP addresses 10.40.1-253.1: containers für teams
-
 
 
 ### Vagrant Commands
@@ -19,7 +17,7 @@ Suspend then Resume: `vagrant suspend` -> `vagrant resume`
 
 Halt then Up: `vagrant halt` -> `vagrant up`
 
-SSH to VM: `vagrant ssh ctfserver` (or `gameserver` or `controller`)
+SSH to VM: `vagrant ssh`
 
 
 ### Setup development environment
@@ -51,34 +49,19 @@ EOF
 1. Set the environment variable for Vagrant `export VAGRANT_DEFAULT_PROVIDER="libvirt"`
 
 
-#### Using both
-
-##### Switch from VirtualBox to libvirt
-
-1. `vagrant destroy -f`
-1. Delete the Host Network in Global Tools in VirtualBox
-
-![Delete this network to use libvirt instead of VirtualBox](https://i.imgur.com/SmBmtCD.png)
-
-##### Switch from libvirt to VirtualBox
-
-1. Install Virtual Machine Manager
-1. Edit -> Connection Details -> Network Interfaces
-1. Delete the `ctfa0` network
-
-![Delete the `ctfa0` network to use VirtualBox instead of libvirt](https://i.imgur.com/y0n7wHb.png)
-
 #### Remaining steps
 
 1. libvirt: run `vagrant up`, if provisioning fails it's possible to retry with `vagrant provision` (try again in 5-30 minutes)
 1. after changing ansible roles run `vagrant provision`
-1. run `vagrant ssh ctfserver` for SSH Shell
+1. run `vagrant ssh` for SSH Shell
     1. in development this VM only contains Team-Containers
     1. in SSH run `lxc list` for a list of containers
     1. Ignore this message from LXD: "If this is your first time using LXD, you should also run: lxd init"
     1. `lxc exec NAME bash` for opening (root) bash in containers
-1. run `lxc exec web bash` for starting a shell in the gameserver container *web*. Gameserver code is mounted from Vagrant folder to container `web` in path `/srv/ctf`.
-    tmux is the recommended tool to run all gameserver services for development
+1. run `lxc exec web bash` for starting a shell in the gameserver container *web*, then switch to user `ctf`: `sudo -u ctf --login bash` and run `cd /srv/ctf`. 
+1. simulate a login like a team would login: `lxc exec team1 sudo -u ubuntu --login bash`
+1. NOTE: Gameserver code is mounted from Vagrant folder to container `web` in path `/srv/ctf`. This means you can change the code from host and it is automatically changed in your VM + container.
+1. NOTE: tmux is the recommended tool to run all gameserver services for development
     
     - to exit tmux use CTRL+b then d
     - open existing tmux session: `tmux -s sessionname`
@@ -107,13 +90,13 @@ EOF
 1. connect (from host) to openvpn using `openvpn --config roles/vpn/files/client_configs/client-teamXXX.ovpn`
 1. http://10.38.1.1:5000/ (Webapp for CTF teams with flag input, scores).
 1. The containers have the timezone UTC, so Attack&Defense Start timestamp must be specified in UTC in the database
-1. Admin interface http://10.38.1.1:4999/admin (use password from ctfdbapi/config.py)
+1. Admin interface http://10.38.1.1:5000/admin (username: `admin` password: value from `dashboard_admin_password` in `inventories/ctf_config.yml`)
 
 
 
 ## Gameserver VM
 
-/opt/scorebot_tmp/ -> run scorebot with python (python 2)
+/opt/scorebot/ -> run scorebot with python (python 2)
 
 /opt/ctfdbapi/tornoado_file.py -> DB API/Scoreboard (run with python3)
 

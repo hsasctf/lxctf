@@ -1,3 +1,5 @@
+inventories/ctf_config.yml
+
 vagrant_ctfdev_config.local.yml
 scorebot/team_list.json
 ctfdbapi/combined_info.json
@@ -10,6 +12,7 @@ roles/infrastructure_lxd/files/lxd.key
 roles/infrastructure_lxd/files/lxd.cert
 roles/infrastructure_lxd/files/jeop_keys/
 roles/infrastructure_lxd/files/team_keys/
+roles/firewall/files/rules.v4/
 
 services/2019/status_system/tmp/*
 
@@ -30,7 +33,7 @@ requirements.bak
 
 seafile-ignore.txt
 
-
+.bash_history
 
 # KDE Dolphin
 .directory
@@ -252,5 +255,5 @@ $RECYCLE.BIN/
 # Log files (if you are creating logs in debug mode, uncomment this)
 # *.logs
 
-# orgfiles will be exported to markdown
+# Orgfiles will be exported to markdown
 *.org

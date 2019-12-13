@@ -10,7 +10,7 @@ import sys
 from db.database import db_session
 from db.models import AttendingTeam, Event, Team, Submission, Flag, Challenge, Member, User, Catering, Food, Tick, \
     TeamScriptsRunStatus, Script, ScriptPayload, ScriptRun
-from reset_db1 import combine_service_infos, create_all_services_and_scripts
+from manage_add_services import combine_service_infos, create_all_services_and_scripts
 
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger(__name__)
@@ -75,12 +75,10 @@ def check_rc(name, rc):
         sys.exit(1)
 
 
-def game_ad_running():
-    event = Event.query.order_by(Event.id.desc()).first()
+def tick_exists():
     db_session.remove()
-    # session.expire_all() # XXX
-    return event.attack_defense_start < datetime.now() < event.end
-
+    tick = Tick.query.filter_by(event=Event.query.order_by(Event.id.desc()).first()).first()
+    return True if tick is not None else False
 
 def stop_tmux_sessions():
     for s in ['scorebot', 'dashboard_worker', 'gamebot', 'ctfdbapi']:
@@ -165,7 +163,7 @@ if __name__ == "__main__":
         combine_service_infos()
         create_all_services_and_scripts()
 
-        logger.info("Now Login to dashboard (for teams) with VPN at http://10.38.1.1:5000")
+        logger.info("Now open dashboard (when in VPN) at http://10.38.1.1:5000")
         logger.info("Starting admin interface at http://10.38.1.1:4999/admin/")
         logger.info("Login using credentials in ctfdbapi/config.py")
         from config import ADMIN_CREDENTIALS
@@ -175,14 +173,7 @@ if __name__ == "__main__":
         logger.info(
             "or login as Admin using this URL: http://{}@10.38.1.1:4999/admin/".format(':'.join(ADMIN_CREDENTIALS)))
         logger.info("-----")
-        logger.info("=====")
-        for t in teams + [test_team, ]:
-            turl = "http://{}@10.38.1.1:5000".format(
-                quote(t.team_name + "-admin") + ":" + quote(ADMIN_CREDENTIALS[1]))
-            logger.info("Login as {} (only for demo purpose) -> {}".format(t.team_name,
-                                                                           turl
-                                                                           ))
-        logger.info("=====")
+
 
         logger.info("Start gamebot?")
         input()
@@ -200,13 +191,13 @@ if __name__ == "__main__":
         logger.info("Continue?")
         input()
 
-        logger.info("Scorebot will start automatically at {} (UTC)".format(event.attack_defense_start))
-        while True:
+        logger.info("Scorebot will start automatically after Gamebot created the first tick".format(event.attack_defense_start))
+        while not tick_exists():
             time.sleep(1)
-            if game_ad_running():
-                break
+
         logger.info("AD started")
         logger.info("Starting scorebot")
+
 
         rc = os.system(
             "tmux new -d -s scorebot -- 'keep-one-running python /opt/scorebot/scorebot.py'")
