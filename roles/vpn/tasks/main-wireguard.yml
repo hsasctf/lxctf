@@ -142,6 +142,13 @@
     - team254
   become: yes
 
+- name: config not world readable
+  file:
+    path: "{{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf"
+    mode: '0600'
+  become: yes
+
+
 
 - name: start the wireguard interfaces
   shell: sudo wg-quick up wg{{ item|replace('team','')|int }}
