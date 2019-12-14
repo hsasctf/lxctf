@@ -9,10 +9,10 @@
 
 - hosts: ctfserver
   roles:
+    - vpn
     - lxd_production
     - firewall
     - infrastructure_lxd
-    - vpn
   tasks:
   - name: set timezone to UTC
     timezone:

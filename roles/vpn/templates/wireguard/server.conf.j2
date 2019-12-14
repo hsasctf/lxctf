@@ -1,0 +1,26 @@
+[Interface]
+PrivateKey = {{ lookup('file', role_path+'/files/wireguard_tmp/privatekey-server')}}
+Address = 10.42.0.{{ item|replace('team','')|int }}/24
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE;
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE;
+ListenPort = 42{{ '%03d'|format(item|replace('team','')|int) }}
+
+[Peer]
+PublicKey = {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item +'-player-1')}}
+AllowedIPs = 10.42.{{ item|replace('team','')|int }}.1/32
+
+[Peer]
+PublicKey = {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item +'-player-2')}}
+AllowedIPs = 10.42.{{ item|replace('team','')|int }}.2/32
+
+[Peer]
+PublicKey = {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item +'-player-3')}}
+AllowedIPs = 10.42.{{ item|replace('team','')|int }}.3/32
+
+[Peer]
+PublicKey = {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item +'-player-4')}}
+AllowedIPs = 10.42.{{ item|replace('team','')|int }}.4/32
+
+[Peer]
+PublicKey = {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item +'-player-5')}}
+AllowedIPs = 10.42.{{ item|replace('team','')|int }}.5/32

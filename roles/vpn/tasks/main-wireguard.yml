@@ -1,0 +1,163 @@
+---
+# tasks file for vpn
+# 
+
+# TODO DNS (router?)
+
+- name: add wireguard ppa
+  apt_repository:
+    repo: ppa:wireguard/wireguard
+  become: yes
+
+
+- name: apt-get update
+  apt: update_cache=yes
+  become: yes
+
+
+- name: install wireguard-tools and kernel modules
+  apt:
+    name:
+      - wireguard-tools
+      - wireguard-dkms
+    state: present
+  become: yes
+
+
+
+## Directories for wireguard host
+- name: create wireguard directory
+  file:
+    path: "/etc/wireguard/"
+    state: directory
+  become: yes
+
+
+- name: create wireguard_tmp directory
+  file:
+    path: "{{ role_path }}/files/wireguard_tmp"
+    state: directory
+
+
+
+
+## Create the wireguard keys
+## Num members is hardcoded here. Change if you have time.
+
+# create the client keys for each first group member
+- name: create client keys round (1)
+  shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item[0] }}-player-{{ item[1] }} | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item[0] }}-player-{{ item[1] }}
+  with_nested:
+    - "{{ groups['ad_containers'] + ['team254',] }}"
+    - "{{ range(1, 6)|list }}" # 5 keys for each team
+  args:
+    creates: "{{ role_path }}/files/wireguard_tmp/publickey-{{ item }}-player-{{ item[1] }}"
+
+
+- name: create keys for server
+  shell: sudo wg genkey | sudo tee {{ role_path }}/files/wireguard_tmp/privatekey-{{ item }} | sudo wg pubkey | sudo tee {{ role_path }}/files/wireguard_tmp/publickey-{{ item }}
+  with_items:
+    - server
+  args:
+    creates: "{{ role_path }}/files/wireguard_tmp/publickey-{{ item }}"
+
+
+## Generation of configuration files
+- name: create client_configs directory
+  file:
+    path: "{{ role_path }}/files/client_configs"
+    state: directory
+      
+
+- name: create server_configs directory
+  file:
+    path: "{{ role_path }}/files/server_configs"
+    state: directory
+
+
+- name: generate wireguard for client
+  template: src=wireguard/client.wireguard.j2 dest={{ role_path }}/files/client_configs/wg1-{{ item[0]|replace('team','')|int }}.conf
+  with_nested:
+    - "{{ groups['ad_containers'] + ['team254',] }}"
+    - "{{ range(1, 6)|list }}" # 5 keys for each team
+
+
+# Server config
+- name: generate wireguard configs for server
+  template: src=wireguard/server.conf.j2 dest={{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+
+
+
+## Moving the configuration files
+# Create the folders
+- name: create a vpn client config dir for each team
+  file:
+    path: "{{ role_path }}/files/client_configs/{{ item }}"
+    state: directory
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+
+
+# Hardcoded teammembers. Change if possible.
+- name: Copy files for client configs
+  copy: remote_src=True src="{{ role_path }}/files/client_configs/wg1-{{ item[0]|replace('team','')|int }}.conf" dest="{{ role_path }}/files/client_configs/{{ item[0] }}/wg{{ item[1] }}.conf"
+  with_nested:
+    - "{{ groups['ad_containers'] + ['team254',] }}"
+    - "{{ range(1, 6)|list }}" # 5 keys for each team
+  tags:
+    - always
+
+## Securing the keys
+#- name: Securing wireguard private keys (chmod)
+#  shell: chmod 600 {{ role_path }}/files/wireguard_tmp/privatekey-*
+#  with_items:
+#    - "{{groups['ad_containers']}}"
+#    - team254
+#    - server
+#  become: yes
+#
+#
+#- name: Securing wireguard private keys (chown)
+#  shell: chown root:root {{ role_path }}/files/wireguard_tmp/privatekey-*
+#  with_items:
+#    - "{{groups['ad_containers']}}"
+#    - team254
+#    - server
+#  become: yes
+  
+
+
+## Moving the server configs and start the server
+- name: move serverconfigs to /etc/wireguard/
+  #shell: mv {{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf /etc/wireguard/
+  copy:
+    src: "{{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf"
+    dest: /etc/wireguard
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: yes
+
+- name: config not world readable
+  file:
+    path: "{{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf"
+    mode: '0600'
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: yes
+
+
+
+- name: start the wireguard interfaces
+  shell: sudo wg-quick up wg{{ item|replace('team','')|int }}
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - exclude_travis
+  become: yes
