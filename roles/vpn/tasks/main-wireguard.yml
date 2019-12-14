@@ -155,4 +155,6 @@
   with_items:
     - "{{groups['ad_containers']}}"
     - team254
+  tags:
+    - exclude_travis
   become: yes
