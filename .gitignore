@@ -8,6 +8,7 @@ sshkey/
 roles/vpn/files/client_configs
 roles/vpn/files/server_configs
 roles/vpn/files/vpn_tempfiles
+roles/vpn/files/wireguard_tmp
 roles/infrastructure_lxd/files/lxd.key
 roles/infrastructure_lxd/files/lxd.cert
 roles/infrastructure_lxd/files/jeop_keys/

@@ -1,9 +1,0 @@
-[Interface]
-PrivateKey = {{ lookup('file', role_path+'/files/wireguard_tmp/privatekey-'+{{ item }}+'player-5')}}
-Address = 10.42.{{ item|replace('team','')|int }}.5/24
-DNS = 10.40.0.{{ item|replace('team','')|int }}
-
-[Peer]
-PublicKey =  {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-server }}
-AllowedIPs = 10.42.0.{{ item|replace('team','')|int }}/32{% for item in {{groups['ad_containers']}} %}, 10.40.{{ item }}.1/32{% endfor %}
-Endpoint = 141.87.8.20:42{{ '%03d'|format(hostvars[item]['team_num']|int) }}

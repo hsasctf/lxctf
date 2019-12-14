@@ -6,7 +6,7 @@
 
 x=0 -> team VM
 x=1 -> openvpn network for teams
-x=2 -> wireguard network for teams, y in [0,5]
+x=2 -> wireguard network for teams, y in [1..5] (team members)
 
 ## gameserver networks
 

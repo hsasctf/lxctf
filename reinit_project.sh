@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-rm -rf roles/vpn/files/*_configs roles/vpn/files/vpn_tempfiles
+rm -rf roles/vpn/files/*_configs roles/vpn/files/vpn_tempfiles roles/vpn/files/wireguard_tmp
 rm -rf roles/infrastructure_lxd/files/*_keys
 rm -rf roles/infrastructure_lxd/files/lxd.{key,cert}
 rm -rf inventories/ctf_config.yml
