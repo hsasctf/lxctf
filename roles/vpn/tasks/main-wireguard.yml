@@ -146,6 +146,9 @@
   file:
     path: "{{ role_path }}/files/server_configs/wg{{ item|replace('team','')|int }}.conf"
     mode: '0600'
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
   become: yes
 
 
