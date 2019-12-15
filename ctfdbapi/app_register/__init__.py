@@ -159,7 +159,7 @@ def download():
     attending = AttendingTeam.query.filter_by(event=event, team=team).first()
 
 
-    return flask.render_template('teams.html', attending=attending, running=running)
+    return flask.render_template('download.html', attending=attending, running=running)
 
 
 @app.route('/download_file/<name>/', methods=['GET'])
