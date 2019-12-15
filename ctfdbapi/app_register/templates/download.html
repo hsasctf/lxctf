@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Attend{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Game Information</h1>
+
+
+    {% if not running %}
+            After {{ event.start }} the log in information will be displayed here
+    {% else %}
+        <h2>Your Subnet {{ attending.subnet }}</h2>
+        <p>
+        Your vulnbox has the ip address 10.40.<strong>{{ attending.subnet }}</strong>.1
+        </p>
+
+        <h2>VPN</h2>
+
+        <h3>Wireguard</h3>
+        {% for i in range(1,6) %}
+            <a href="/download_file/wg{{ i }}/">Wireguard Client {{ i }}</a> <br>
+        {% endfor %}
+
+        <p>TODO: provide instructions</p>
+
+        <h3>OpenVPN</h3>
+        Our OpenVPN server is configured to allow this key to be used multiple times:
+        <a href="/download_file/ovpn/">Download</a>
+
+        <p>Use sudo openvpn --config FILENAME to connect</p>
+
+        <h2>
+        SSH
+        </h2>
+        <p>
+        <a href="/download_file/ssh/">SSH key download</a>
+        </p>
+
+        <p>    Connect  using ssh -i keyfile ubuntu@10.40.{{ attending.subnet }}.1</p>
+
+
+        <h2>Dashboard</h2>
+        Available in VPN: http://10.38.1.1:5000
+
+
+    {% endif %}
+
+{% endblock %}

@@ -1,3 +1,5 @@
+import os
+
 import flask
 from flask_mail import Message, Mail
 
@@ -5,6 +7,7 @@ from app_register.utils import is_safe_url
 
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from flask import Flask, session, request, flash, url_for, redirect, render_template, abort, g
+from flask import send_file, send_from_directory, safe_join
 
 from db.database import db_session
 from db.models import AttendingTeam, Event, Team, Member, User
@@ -141,6 +144,53 @@ def validation_user(token):
         flash("Token not found")
 
     return flask.redirect(flask.url_for('index'))
+
+
+@app.route('/download/', methods=['GET'])
+def download():
+    """
+    this function is needed for providing log in keys while the game is running
+    """
+    team = current_user
+    event = Event.query.order_by(Event.id.desc()).first()
+    # use event.start here, not event.attack_defense_start
+    # event.start is when teams should log in to patch services
+    running = event.start < datetime.now() < event.end
+    attending = AttendingTeam.query.filter_by(event=event, team=team).first()
+
+
+    return flask.render_template('teams.html', attending=attending, running=running)
+
+
+@app.route('/download_file/<name>/', methods=['GET'])
+def download_type(name):
+    """
+    provide download for VPN and ssh keys
+    """
+    team = current_user
+    event = Event.query.order_by(Event.id.desc()).first()
+    # use event.start here, not event.attack_defense_start
+    # event.start is when teams should log in to patch services
+    running = event.start < datetime.now() < event.end
+    if not running:
+        return "Download only works during event"
+    if name not in ["wg1", "wg2", "wg3", "wg4", "wg5", "ovpn", "ssh"]:
+        return "unknown file type"
+    attending = AttendingTeam.query.filter_by(event=event, team=team).first()
+    subnet = attending.subnet
+    ar_path = os.path.dirname(os.path.realpath(__file__))
+    vpn = os.path.join(ar_path, "..", "..", "roles", "vpn", "files", "client_configs")
+    ssh = os.path.join(ar_path, "..", "..", "roles", "infrastructure_lxd", "files", "team_keys")
+
+    if name == "ovpn":
+        return send_from_directory(vpn, filename="client-team{}.ovpn".format(int(subnet)), as_attachment=True)
+    elif name.startswith("wg"):
+        num = int(name.lstrp("wg"))
+        return send_from_directory(os.path.join(vpn, "team{}".format(int(subnet))), filename="wg{}.conf".format(num), as_attachment=True)
+    elif name == "ssh":
+        return send_from_directory(ssh, filename="team{}".format(int(subnet)), as_attachment=True)
+    else:
+        return "error"
 
 
 
@@ -315,6 +365,11 @@ def attend():
 
     form = AttendForm()
     if form.validate_on_submit():
+
+        if datetime.now() > event.registration_end:
+            flash("Registration time is over")
+            return flask.redirect(flask.url_for('attend'))
+
         members_to_add = []
 
         def verify_member_form(tpl):
