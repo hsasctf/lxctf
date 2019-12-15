@@ -7,7 +7,7 @@ import time
 import redis
 import requests
 
-from config import API_SECRET, API_BASE_URL
+from config import API_SECRET, DASHBOARD_WORKER_API_BASE_URL
 
 REFRESH_INTERVAL = 1  # seconds
 
@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 
 class RedisUpdater(object):
     def __init__(self):
-        self.api_url = API_BASE_URL
+        self.api_url = DASHBOARD_WORKER_API_BASE_URL
         self.params = {"secret": API_SECRET}
         self.redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
         self.gameinfo = None
@@ -132,6 +132,12 @@ class RedisUpdater(object):
 
     def store_redis(self, key, value):
         self.redis_client.set(key, value)
+
+    def ctf_reasons(self):
+        url = '/'.join([self.api_url, "reasons"])
+        r = requests.get(url, params=self.params)
+        # reasons_data = r.json()["reasons"]
+        self.store_redis('ctf_reasons', json.dumps(r.json()))
 
 
 def main():

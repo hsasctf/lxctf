@@ -4,9 +4,9 @@ import pymysql
 from flask import Flask
 from flask import render_template
 
-
+from app.fakeapi import fakeapi
 from app.api import api
-from app.web import web
+from app.dashboard import dashboard
 from db.database import db_session
 
 pymysql.install_as_MySQLdb()
@@ -20,8 +20,10 @@ fileHandler.setFormatter(logFormatter)
 app = Flask(__name__)
 app.config.from_object('config')
 
-app.register_blueprint(web)
+app.register_blueprint(dashboard)
 app.register_blueprint(api, url_prefix='/api/v01')
+
+app.register_blueprint(fakeapi, url_prefix='/fakeapi/v01')
 
 app.logger.addHandler(fileHandler)
 app.logger.setLevel(logging.DEBUG)  # ?

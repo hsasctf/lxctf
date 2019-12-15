@@ -1,3 +1,8 @@
+"""
+this flask blueprint contains web function that are used by the scorebot
+web functions for dashboard_worker are in the blueprint "fakeapi"
+"""
+
 import random
 import string
 
@@ -36,30 +41,6 @@ def generate_new_flag():
 ##### API functions #####
 
 
-@api.route('/getjeopardylist')
-def get_jeopardy_list():
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    # get newest event:
-    event = Event.query.order_by(Event.id.desc()).first()
-
-    # get all jeopardies from this event
-    jeos = Challenge.query.filter_by(type="jeopardy", event=event)
-
-    # do not serialize the flags:
-    public_jeos = [
-        {
-            "id": j.id,
-            "name": j.name,
-            "points": j.points,
-            "port": j.port,
-            "description": j.description.replace("\n", "<br>")
-
-        } for j in jeos
-    ]
-    return jsonify(public_jeos)
-
 
 @api.route("/getteamlist")
 def get_team_list():
@@ -82,12 +63,6 @@ def get_team_list():
         res[ateam.id] = {"team_id": ateam.id, "ip": "10.40.{}.1".format(ateam.subnet)}
 
     return jsonify(res)
-
-
-@api.route("/tick_duration")
-def get_tick_duration():
-    _, seconds_to_next_tick = get_current_tick()
-    return json.dumps(seconds_to_next_tick)
 
 
 ##### iCTF section #######
@@ -159,63 +134,6 @@ def current_state():
     return jsonify(result)
 
 
-@api.route('/getgameinfo')
-def get_game_info():
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    # current_tick, time_left = get_current_tick()
-    # teams = get_service_state_by_tick(current_tick)
-    #
-    # return jsonify(get_service_state_by_tick(current_tick))
-
-    event = Event.query.order_by(Event.id.desc()).first()
-
-    teams = AttendingTeam.query.filter_by(event=event).all()
-
-    services = Challenge.query.filter_by(event=event, type='ad').all()  # TODO type jeopardy?
-
-    return jsonify({
-        "services": [
-            {
-                "service_id": s.id,
-                "service_name": s.name,
-                "port": s.port,
-                "flag_id_description": s.flag_id_description,
-                "description": s.description,
-            } for s in services
-        ],
-        "teams": [
-            {
-                "team_id": t.id,
-                "team_name": t.team.team_name,
-                "ip_range": "10.40.{}".format(t.subnet)
-            } for t in teams
-        ]
-    })
-
-
-@api.route("/getservicesstate/<tick_id>")
-def get_service_state_tick(tick_id):
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    tick = Tick.query.filter_by(id=tick_id).first()
-    teams = get_service_state_by_tick(tick)
-
-    return jsonify(get_service_state_by_tick(tick))
-
-
-@api.route("/getservicesstate")
-def get_services_state():
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    current_tick, time_left = get_current_tick()
-
-    teams = get_service_state_by_tick(current_tick)
-
-    return jsonify(get_service_state_by_tick(current_tick))
 
 
 def get_service_state_by_tick(tick):
@@ -424,29 +342,6 @@ def get_latest_flag_and_cookie(team_id, service_id):
     return jsonify(result)
 
 
-@api.route("/getlatestflagids")
-def get_latest_flag_ids():
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    flag_ids = {}
-
-    event = Event.query.order_by(Event.id.desc()).first()
-
-    teams = AttendingTeam.query.filter_by(event=event)
-
-    for team in teams:
-        services = AttendingTeam.query.filter_by(event=event)
-
-        flag_ids[int(team.id)] = {}
-        for service in Challenge.query.filter_by(type="ad", event=event):
-
-            flag = Flag.query.filter_by(attending_team=team, challenge=service).order_by(Flag.created.desc()).first()
-            if flag and flag.flag_id:
-                flag_ids[int(team.id)][int(service.id)] = flag.flag_id
-
-    to_return = {'flag_ids': flag_ids}
-    return jsonify(to_return)
 
 
 def verify_flag(attacking_team_id, flag):
@@ -519,9 +414,9 @@ def verify_flag(attacking_team_id, flag):
             if existing_flag_in_db.id in list(map(lambda x: x.id, latest_flags)):
                 # Success! Give this team some points!
                 points = existing_flag_in_db.challenge.points
-                message = "Team %s successfully captured active flag from service %s from team %s" % (attacking_team.id,
-                                                                                                      existing_flag_in_db.challenge.id,
-                                                                                                      existing_flag_in_db.attending_team.id)
+                message = "Team %s successfully captured active flag from service %s from team %s" % (attacking_team.subnet,
+                                                                                                      existing_flag_in_db.challenge.name,
+                                                                                                      existing_flag_in_db.attending_team.subnet)
 
                 ts = TeamScore()
                 ts.attending_team = attacking_team  # TODO test
@@ -552,8 +447,7 @@ def verify_flag(attacking_team_id, flag):
         if c is not None:
             # Jeopardy Success! Give this team some points!
             points = c.points
-            message = "Team %s Successfully captured jeopardy flag from challenge %s" % (attacking_team.id,
-                                                                                         c.id)
+            message = "Team {} successfully captured jeopardy flag from challenge ".format(attacking_team.subnet, c.name)
 
             ts = TeamScore()
             ts.attending_team = attacking_team
@@ -582,82 +476,3 @@ def submit_flag(attacking_team_id, flag):
         abort(401)
 
     return verify_flag(attacking_team_id, flag)
-
-
-
-
-@api.route("/scores")
-def scores():
-    if request.args.get('secret') != API_SECRET:
-        abort(401)
-
-    event = Event.query.order_by(Event.id.desc()).first()
-    particiant_ids = [x.id for x in event.participants]
-
-    team_scores = db_session.query(TeamScore.attending_team_id,
-                                   label('score', func.sum(TeamScore.score)),
-                                   ).filter(TeamScore.attending_team_id.in_(particiant_ids)).group_by(
-        TeamScore.attending_team_id).order_by(desc(func.sum(TeamScore.score))).all()
-
-    to_return = {'scores': {}}
-
-    for team_score in team_scores:
-        team_result = dict()
-        team_result['raw_score'] = int(team_score[1])  # TODO handle None
-
-        sla_percentage = get_uptime_for_team(AttendingTeam.query.filter_by(id=team_score[0], event=event).first())
-        team_result['sla'] = int(sla_percentage)
-        team_result['score'] = team_result['raw_score'] * (sla_percentage / 100.0)
-
-        to_return['scores'][team_score[0]] = team_result
-
-    return jsonify(to_return)
-
-
-def get_uptime_for_team(team):
-    event = Event.query.order_by(Event.id.desc()).first()
-
-    # get all tss from a team grouped by services
-
-    tsss1 = db_session.query(
-        label('count', func.count(TeamServiceState.id)),
-        TeamServiceState.challenge_id,
-    ).group_by(TeamServiceState.challenge_id,
-               ).filter_by(attending_team=team)
-
-    total_counts = {}
-    for tss in tsss1:
-        total_counts[tss[1]] = tss[0]
-
-    # get all tss from a team with state 2 where service is up grouped by service
-
-    tsss2 = db_session.query(
-        label('count', func.count(TeamServiceState.id)),
-        TeamServiceState.challenge_id,
-    ).group_by(TeamServiceState.challenge_id,
-               ).filter_by(attending_team=team, state=2)
-
-    up_counts = {}
-    for tss in tsss2:
-        up_counts[tss[1]] = tss[0]
-    uptimes = {}
-    for service_id in total_counts.keys():
-        total = total_counts[service_id]
-        up = 0
-        try:
-            up = up_counts[service_id]
-        except:
-            pass
-        uptime = ((up * 1.0) / (total * 1.0)) * 100
-
-        uptimes[service_id] = uptime
-
-    # now average all the uptimes
-
-    total = 0
-    for service_id in uptimes.keys():
-        total += uptimes[service_id]
-
-    if len(uptimes) == 0:
-        return 0
-    return total / len(uptimes)

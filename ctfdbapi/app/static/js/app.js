@@ -30,6 +30,10 @@ ctfApp.config(['$routeProvider',
         templateUrl: 'static/partials/welcome.html',
         controller: 'ConfigCtrl'
       }).
+      when('/liveshow', {
+        templateUrl: 'static/partials/liveshow.html',
+        controller: 'LiveshowCtrl'
+      }).
       otherwise({
         redirectTo: '/welcome'
       });

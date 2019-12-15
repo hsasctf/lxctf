@@ -34,13 +34,13 @@ def delete_prev_demos():
     db_session.commit()
 
 
-def new_demo_event(ad_start_minutes=5):
+def new_demo_event(ad_start_seconds=5):
     event = Event()
     event.registration_start = datetime.now() - timedelta(days=14)
     event.registration_end = datetime.now() - timedelta(days=2)
     event.start = datetime.now()
     event.end = datetime.now() + timedelta(hours=12)
-    event.attack_defense_start = datetime.now() + timedelta(minutes=ad_start_minutes)
+    event.attack_defense_start = datetime.now() + timedelta(seconds=ad_start_seconds)
     event.is_demo = 1
     db_session.add(event)
     db_session.commit()
@@ -93,16 +93,16 @@ def stop_tmux_sessions():
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("run: python3 {} <minutes until AD starts>".format(sys.argv[0]))
+        print("run: python3 {} <seconds until AD starts>".format(sys.argv[0]))
         sys.exit(1)
     try:
-        minutes = int(sys.argv[1])
-        assert minutes >= 0
+        seconds = int(sys.argv[1])
+        assert seconds >= 0
     except ValueError:
-        print("run: python3 {} <minutes until AD starts>".format(sys.argv[0]))
+        print("run: python3 {} <seconds until AD starts>".format(sys.argv[0]))
         sys.exit(1)
     except AssertionError:
-        print("run: python3 {} <minutes until AD starts>".format(sys.argv[0]))
+        print("run: python3 {} <seconds until AD starts>".format(sys.argv[0]))
         sys.exit(1)
 
     try:
@@ -113,14 +113,14 @@ if __name__ == "__main__":
         delete_prev_demos()
         Team.query.filter_by(team_name="test").delete()
 
-        logger.info("Starting Dashboard, takes up to 3 minutes in background")
+        logger.info("Starting Dashboard, takes up to 3 seconds in background")
         rc = os.system(
             "tmux new -d -s ctfdbapi -- 'keep-one-running python3 /opt/ctfdbapi/tornado_file.py'  \; pipe-pane 'cat >> /var/log/ctf/tornado.log'")
         check_rc("ctfdbapi", rc)
 
         logger.info("Create Event?")
         input()
-        event = new_demo_event(ad_start_minutes=minutes)
+        event = new_demo_event(ad_start_seconds=seconds)
         logger.info("Event: Defense time started, AD will start at {} (UTC)".format(event.attack_defense_start))
 
 

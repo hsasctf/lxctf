@@ -35,4 +35,4 @@ LOGIN_DISABLED = False
 
 CTF_NAME = "HSAlbSigCTF"
 
-API_BASE_URL = "http://127.0.0.1:5000/api/v01"  # without trailing slash
+DASHBOARD_WORKER_API_BASE_URL = "http://127.0.0.1:5000/fakeapi/v01"  # without trailing slash
