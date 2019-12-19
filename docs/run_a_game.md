@@ -56,8 +56,7 @@ tmux new -d -s dashboard_worker -- 'keep-one-running python3 /opt/ctfdbapi/dashb
 
 -   run `scripts/01_fw_ssh.sh` to prevent access to SSH (for teams)
 -   last step should be before Event.start (in database)
--   after Event.start the register app allows for download of keys (NOT
-    IMPLEMENTED YET)
+-   after Event.start the register app allows for download of keys (implemented but UNTESTED)
 -   run `scripts/02_allow_patching.sh` to allow teams to connect via SSH
     for service patching
 -   run `scripts/03_allow_attack.sh` after `Event.attack_defense_start` in
