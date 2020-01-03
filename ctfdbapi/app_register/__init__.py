@@ -26,12 +26,11 @@ mail = Mail()
 mail.init_app(app)
 login_manager = LoginManager()
 
-
-
 #### Register
 login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
+
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -57,7 +56,7 @@ def load_user(user_id):
     return Team.query.filter_by(id=int(user_id)).first()
 
 
-
+# TODO this is unused code?
 @app.route("/validate/<token>")
 def validate(token):
     u = Team.query.filter_by(token=token).first()
@@ -66,10 +65,10 @@ def validate(token):
     db_session.commit()
 
 
-
 @app.route("/faq/")
 def faq():
     return render_template("faq.html")
+
 
 @app.route("/")
 def index():
@@ -79,6 +78,7 @@ def index():
         return "Database error, there is no empty event in database (event without ticks)"
     return render_template("index.html", event=event)
 
+
 @app.route("/validation_unregister/<token>/")
 def validation_unregister(token):
     if len(token) < 10:
@@ -87,12 +87,11 @@ def validation_unregister(token):
     if not user:
         flash("Error")
     else:
-        #members = Member.query.filter_by(user=user).delete()
+        # members = Member.query.filter_by(user=user).delete()
         db_session.delete(user)
         db_session.commit()
         flash("Success")
     return flask.redirect(flask.url_for('index'))
-
 
 
 @app.route('/unregister/', methods=['GET', 'POST'])
@@ -117,8 +116,8 @@ def unregister():
                       recipients=[user.email],
                       body="You requested your deletion from all CTF teams. To confirm use this URL"
                            " {}{}".format(
-                        config.URL_BASE,
-                        url_for("validation_unregister", token=user.token)),
+                          config.URL_BASE,
+                          url_for("validation_unregister", token=user.token)),
                       )
         mail.send(msg)
         flash("Email was sent to your email address. Please follow the instructions in this email.")
@@ -127,7 +126,6 @@ def unregister():
 
 
 @app.route("/validation_user/<token>/")
-@app.route("/validate.php", defaults={'token': None})  # TODO testk
 def validation_user(token):
     if token is None:
         token = request.args.get('token')
@@ -158,7 +156,6 @@ def download():
     running = event.start < datetime.now() < event.end
     attending = AttendingTeam.query.filter_by(event=event, team=team).first()
 
-
     return flask.render_template('download.html', attending=attending, running=running)
 
 
@@ -185,20 +182,20 @@ def download_type(name):
     if name == "ovpn":
         return send_from_directory(vpn, filename="client-team{}.ovpn".format(int(subnet)), as_attachment=True)
     elif name.startswith("wg"):
-        num = int(name.lstrp("wg"))
-        return send_from_directory(os.path.join(vpn, "team{}".format(int(subnet))), filename="wg{}.conf".format(num), as_attachment=True)
+        num = int(name.lstrip("wg"))
+        return send_from_directory(os.path.join(vpn, "team{}".format(int(subnet))), filename="wg{}.conf".format(num),
+                                   as_attachment=True)
     elif name == "ssh":
         return send_from_directory(ssh, filename="team{}".format(int(subnet)), as_attachment=True)
     else:
         return "error"
 
 
-
 @app.route('/teams/', methods=['GET'])
 def teams():
     events = Event.query.filter_by().order_by(Event.id.desc())
     return flask.render_template('teams.html', events=events)
-    
+
 
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
@@ -219,8 +216,8 @@ def register():
         flash("Team is now registered. You can now log in")
         return flask.redirect(flask.url_for('login'))
 
-
     return flask.render_template('register.html', form=form)
+
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -246,10 +243,10 @@ def login():
 
     return flask.render_template('login.html', form=form)
 
+
 @app.route("/validation_passwordreset/<team_id>/<hash>/")
 def validation_passwordreset(team_id, hash):
     team = Team.query.filter_by(id=int(team_id)).first()
-
 
     if not team:
         flash("Team not found")
@@ -277,6 +274,7 @@ def validation_passwordreset(team_id, hash):
 
     return flask.redirect(flask.url_for('index'))
 
+
 @app.route('/passwordreset/', methods=['GET', 'POST'])
 def passwordreset():
     if current_user.is_authenticated:
@@ -294,23 +292,23 @@ def passwordreset():
                       reply_to=config.MAIL_REPLY_TO,
                       recipients=[u.email for u in users],
                       body="Please validate your password reset request at {}{}".format(
-                        config.URL_BASE,
-                        url_for("validation_passwordreset", team_id=team.id, hash=team.password)),
+                          config.URL_BASE,
+                          url_for("validation_passwordreset", team_id=team.id, hash=team.password)),
                       )
         mail.send(msg)
 
         flash('Email was sent to all team members')
 
-
-
     return flask.render_template('passwordreset.html', form=form)
+
 
 def first_empty_subnet():
     event = get_empty_event_or_fail()
     attending_teams = AttendingTeam.query.filter_by(event=event)
     used_nets = {a.subnet for a in attending_teams}
-    free_nets = set(range(1,250)).difference(used_nets)
+    free_nets = set(range(1, 250)).difference(used_nets)
     return list(free_nets)[0]
+
 
 def get_empty_event_or_fail():
     event = Event.query.order_by(Event.id.desc()).first()
@@ -319,8 +317,6 @@ def get_empty_event_or_fail():
     if event.ticks.first():
         raise Exception("Cannot use an event with existing ticks. Create a new event.")
     return event
-
-
 
 
 def send_validation_email(u, team):
@@ -342,18 +338,16 @@ def send_validation_email(u, team):
 def retry_validation(user_id):
     team = current_user
     user = User.query.filter_by(id=int(user_id)).first()
-    
+
     # test if validation is allowed
     if not Member.query.filter_by(team=team, user=user).first():
         return "ERROR"
-    
+
     send_validation_email(user, team)
-    
+
     flash("New validation email was sent to user")
-    
+
     return redirect(url_for("index"))
-
-
 
 
 @app.route("/attend/", methods=['GET', 'POST'])
@@ -384,33 +378,34 @@ def attend():
             if verify_member_form(tpl) is False:
                 flash("Fill all 3 fields for each member")
                 return False
-                #return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+            # return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
             elif verify_member_form(tpl) is True:
-                if not tpl[0].endswith("@hs-albsig.de"): # FIXME
+                if not tpl[0].endswith("@hs-albsig.de"):  # FIXME
                     flash("Please use only university email addresses")
                     return False
-                    #return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+                # return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
                 members_to_add.append(tpl)
             else:
                 print("Empty 3-tuple")
             return True
+
         # Check form
 
         _ = check_3_tuple((form.email1.data, form.surname1.data, form.forename1.data))
         if not _:
             return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
         _ = check_3_tuple((form.email2.data, form.surname2.data, form.forename2.data))
-       	if not _:
-       	    return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+        if not _:
+            return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
         _ = check_3_tuple((form.email3.data, form.surname3.data, form.forename3.data))
-       	if not _:
-       	    return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+        if not _:
+            return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
         _ = check_3_tuple((form.email4.data, form.surname4.data, form.forename4.data))
-       	if not _:
-       	    return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+        if not _:
+            return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
         _ = check_3_tuple((form.email5.data, form.surname5.data, form.forename5.data))
-       	if not _:
-       	    return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
+        if not _:
+            return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
 
         # delete AttendingTeam
         if attending is not None:
@@ -454,18 +449,13 @@ def attend():
             db_session.commit()
             flash("Emails were sent to your email addresses. Please follow the instructions in this email.")
 
-
-
         db_session.commit()
 
         return flask.redirect(flask.url_for('attend'))
 
-        # Send verification links TODO
-
+    # Send verification links TODO
 
     return flask.render_template('attend.html', form=form, members=team.members, attending=attending)
-
-
 
 
 @app.route("/logout")
