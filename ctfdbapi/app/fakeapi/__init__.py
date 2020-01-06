@@ -126,7 +126,7 @@ def get_reasons():
 
     for team_score in TeamScore.query.filter(TeamScore.attending_team.has(AttendingTeam.id.in_(particiant_ids))):
         result.append({"reason": str(team_score.reason)})
-        print(str(result))
+        #print(str(result))
         break
 
 

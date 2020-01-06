@@ -2,9 +2,12 @@
 
 # lxctf
 
-Ansible project to automate installation and configuration of an Attack/Defense CTF framework (based of iCTF concept and code).
+Attack/Defense CTF framework that is based on iCTF concept and code.
 
-## How to use the development environment
+Unlike iCTF, we are not creating VirtualBox images or setup cloud servers for the teams. Instead, we setup machine containers (LXD) with networking on a single machine where the CTF takes place.  
+ 
+
+## How to install the development environment
 
 ```
 git clone URL
@@ -25,7 +28,7 @@ git submodule update
 ## Components
 
 - Vagrant for development environment
-- OpenVPN Server for connections to CTF server
+- OpenVPN + Wireguard Server for connections to CTF server
 - SQLAlchemy for database connection from Python to MariaDB
 - Flask-Admin for database administration
 - Ansible scripts for installation

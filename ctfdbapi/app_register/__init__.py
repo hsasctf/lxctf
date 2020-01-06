@@ -145,6 +145,7 @@ def validation_user(token):
 
 
 @app.route('/download/', methods=['GET'])
+@login_required
 def download():
     """
     this function is needed for providing log in keys while the game is running
