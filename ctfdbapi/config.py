@@ -1,4 +1,6 @@
 # Statement for enabling the development environment
+import hashlib
+
 import yaml
 
 DEBUG = True
@@ -17,6 +19,7 @@ API_SECRET = GLOBAL_CONFIG['api_secret']
 
 SQLALCHEMY_DATABASE_URI = 'mysql://ctf:{}@127.0.0.1/ctf'.format(GLOBAL_CONFIG['mysql_ctf_password'])
 
+SECRET_KEY = hashlib.pbkdf2_hmac('sha256', GLOBAL_CONFIG['secret'].encode("utf8"), "flask_secret_key".encode("utf8"), 100)
 
 DATABASE_CONNECT_OPTIONS = {}
 
