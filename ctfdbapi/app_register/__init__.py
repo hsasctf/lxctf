@@ -75,7 +75,7 @@ def index():
     try:
         event = get_empty_event_or_fail()
     except:
-        return "Database error, there is no empty event in database (event without ticks)"
+        return "Database error, you have to add an Event to database first (an Event without Ticks)"
     return render_template("index.html", event=event)
 
 
