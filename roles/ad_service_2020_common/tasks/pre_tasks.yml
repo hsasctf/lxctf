@@ -47,6 +47,11 @@
 - set_fact: service_base_path= "{{ role_path }}/../../services/2020/{{ service_name }}"
 
 
+# TODO: reomve after ctf
+- name: add ppa required by 2020_pizzaservice
+  apt_repository:
+    repo: ppa:mhier/libboost-latest
+
 - name: install deps for service
   apt:
     name: "{{ item }}"
