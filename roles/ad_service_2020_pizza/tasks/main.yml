@@ -1,0 +1,42 @@
+---
+# tasks file for ad_service_2020_pizza
+
+
+- name: run pre tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: pre_tasks
+
+
+- stat: path=/home/pizza/pizzaservice
+  register: server_result
+  become: yes
+
+
+- name: force recompilation
+  file:
+    path: "/home/{{ service_name }}/{{ item }}"
+    state: absent
+  loop:
+    - rsa_keys
+    - build
+  become: yes
+  when: server_result.stat.exists == False
+
+
+- name: make init script executable
+  file:
+    path: "/home/{{ service_name }}/init.sh"
+    mode: 0700
+  become: yes
+
+
+- name: run init script
+  shell: 'sudo -H -u {{ service_name }} -- sh -c "cd /home/{{ service_name }}/ && ./init.sh"'
+  become: yes
+
+
+- name: run post tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: post_tasks

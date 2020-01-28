@@ -1,0 +1,13 @@
+[program:{{ service_name }}]
+directory=/home/{{ service_name }}
+command=/home/{{ service_name }}/pizzaservice 5001 order.db /home/{{ service_name }}/rsa_keys/pub_key.pem /home/{{ service_name }}/rsa_keys/priv_key.pem
+autostart=true
+autorestart=true
+startretries=20
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/{{ service_name }}-err.log
+stdout_logfile=/var/log/{{ service_name }}-out.log
+user={{ service_name }}
+killasgroup=true
+stopasgroup=true
