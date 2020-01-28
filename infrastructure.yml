@@ -37,10 +37,10 @@
 - hosts: ad_containers
   roles:
      - { role: geerlingguy.pip, become: yes }
-     - ad_service_2019_common
+     - ad_service_2020_common
 #     - ad_service_2019_hs_note
 #     - ad_service_2019_ctf_status_service
 #     - ad_service_2019_webalbum
 #     - ad_service_2019_safe_file_check
-     - ad_service_2019_logserver
+     - ad_service_2020_albsig_bank
 

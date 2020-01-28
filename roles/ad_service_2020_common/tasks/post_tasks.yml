@@ -1,0 +1,24 @@
+---
+
+- name: set owner/group for service files
+  file:
+    path: "/home/{{ service_name }}"
+    owner: "{{ service_name }}"
+    group: "{{ service_name }}"
+    recurse: yes
+  become: yes
+
+
+- name: copy supervisor config for service
+  template:
+    src: config.j2
+    dest: "/etc/supervisor/conf.d/{{ service_name }}.conf"
+  become: yes
+  when: supervisor
+
+- name: restart service
+  supervisorctl:
+    name: "{{ service_name }}"
+    state: restarted
+  become: yes
+  when: supervisor

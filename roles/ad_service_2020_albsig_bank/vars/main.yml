@@ -1,0 +1,5 @@
+---
+# vars file for ad_service_2019_logserver
+
+service_name: "logserver"
+supervisor: yes

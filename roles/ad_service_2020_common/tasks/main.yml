@@ -1,0 +1,15 @@
+---
+# tasks file for ad_service_2020_common
+
+- name: install supervisor
+  apt:
+    name: supervisor
+    state: latest
+  become: true
+
+- name: start supervisor
+  service:
+    name: supervisor
+    state: started
+  become: yes
+
