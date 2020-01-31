@@ -1,0 +1,19 @@
+---
+# tasks file for ad_service_2020_pizza
+
+
+- name: run pre tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: pre_tasks
+
+
+- stat: path=/home/{{ service_name }}/pwstore.py
+  register: server_result
+  become: yes
+  
+
+- name: run post tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: post_tasks
