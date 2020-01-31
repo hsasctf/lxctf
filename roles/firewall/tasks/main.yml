@@ -364,6 +364,36 @@
     jump: MASQUERADE
   become: yes
 
+- name: anonymize the connections to teamservices
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    protocol: tcp
+    out_interface: "teambr{{ item[0]|replace('team','')|int }}"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.1"
+    destination_port: "{{ item[1] }}"
+    jump: MASQUERADE
+    comment: "anonymize connections to team TCP services"
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+  become: yes
+
+- name: anonymize the connections to teamservices
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    protocol: udp
+    out_interface: "teambr{{ item[0]|replace('team','')|int }}"
+    destination: "10.40.{{ item[0]|replace('team','')|int }}.1"
+    destination_port: "{{ item[1] }}"
+    jump: MASQUERADE
+    comment: "anonymize connections to team UDP services"
+  with_nested:
+    - "{{groups['ad_containers']}}"
+    - "{{ service_ports }}"
+  become: yes
+
 
 ## DEFAULT RULES
 # Set the INPUT policy to accept

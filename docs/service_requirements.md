@@ -113,3 +113,9 @@ apt_dependencies: #*
     - g++
     - cmake
 ```
+
+
+## Firewall integration
+
+Open the vars/main.yml in role/firewall.
+Add all the service's ports to this list, so the firewall is configured correctly (usually starting at port 5001).
