@@ -151,10 +151,28 @@
     - team254
   become: yes
 
+- name: config not world readable (2)
+  file:
+    path: "/etc/wireguard/wg{{ item|replace('team','')|int }}.conf"
+    mode: '0600'
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  become: yes
 
+# TODO: restart as handler
+- name: stop the wireguard interfaces
+  command: wg-quick down wg{{ item|replace('team','')|int }}
+  with_items:
+    - "{{groups['ad_containers']}}"
+    - team254
+  tags:
+    - exclude_travis
+  ignore_errors: yes
+  become: yes
 
 - name: start the wireguard interfaces
-  shell: sudo wg-quick up wg{{ item|replace('team','')|int }}
+  command: wg-quick up wg{{ item|replace('team','')|int }}
   with_items:
     - "{{groups['ad_containers']}}"
     - team254
