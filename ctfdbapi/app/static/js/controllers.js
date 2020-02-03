@@ -13,7 +13,7 @@ ctfControllers.controller('ServicesCtrl', ['$scope', '$http', '$timeout',
             });
             $timeout(function () {
                 $scope.reload();
-            }, 30000)
+            }, (Math.random() * (35 - 24) + 24)*1000)
         };
         $scope.reload();
     }]);
@@ -27,7 +27,7 @@ ctfControllers.controller('JeopardiesCtrl', ['$scope', '$http', '$timeout',
             });
             $timeout(function () {
                 $scope.reload();
-            }, 30000)
+            }, (Math.random() * (35 - 24) + 24)*1000)
         };
         $scope.reload();
     }]);
@@ -57,7 +57,7 @@ ctfControllers.controller('ScoreboardCtrl', ['$scope', '$http', '$timeout',
             });
             $timeout(function () {
                 $scope.reload();
-            }, 30000)
+            }, (Math.random() * (35 - 24) + 24)*1000)
         };
         $scope.reload();
     }]);
@@ -96,7 +96,7 @@ ctfControllers.controller('LiveshowCtrl', ['$scope', '$http', '$timeout',
             });
             $timeout(function () {
                 $scope.reload();
-            }, 30000)
+            }, (Math.random() * (35 - 24) + 24)*1000)
         };
         $scope.reload();
 

@@ -414,9 +414,13 @@ def verify_flag(attacking_team_id, flag):
             if existing_flag_in_db.id in list(map(lambda x: x.id, latest_flags)):
                 # Success! Give this team some points!
                 points = existing_flag_in_db.challenge.points
-                message = "Team %s successfully captured active flag from service %s from team %s" % (attacking_team.subnet,
-                                                                                                      existing_flag_in_db.challenge.name,
-                                                                                                      existing_flag_in_db.attending_team.subnet)
+
+                message = "Team {} ({}) successfully captured active flag from service {} from team {} ({})".format(attacking_team.subnet,
+                                                                                                               attacking_team.team.team_name,
+                                                                                                                    existing_flag_in_db.challenge.name,
+                                                                                                                    existing_flag_in_db.attending_team.subnet,
+                                                                                                                    existing_flag_in_db.attending_team.team.team_name
+                                                                                                               )
 
                 ts = TeamScore()
                 ts.attending_team = attacking_team  # TODO test
@@ -447,7 +451,7 @@ def verify_flag(attacking_team_id, flag):
         if c is not None:
             # Jeopardy Success! Give this team some points!
             points = c.points
-            message = "Team {} successfully captured jeopardy flag from challenge ".format(attacking_team.subnet, c.name)
+            message = "Team {} () successfully captured jeopardy flag from challenge {}".format(attacking_team.subnet, attacking_team.team.team_name, c.name)
 
             ts = TeamScore()
             ts.attending_team = attacking_team

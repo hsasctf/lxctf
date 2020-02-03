@@ -80,7 +80,7 @@
     <script type="text/javascript">
         updateTimer();
         var timerInterval;
-        timerInterval = setInterval(updateTimer, 20000);
+        timerInterval = setInterval(updateTimer, (Math.random() * (35 - 24) + 24)*1000);
 
         function updateTimer() {
             $.getJSON("/tick_change_time", function (time_left) {
