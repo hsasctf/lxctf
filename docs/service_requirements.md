@@ -101,7 +101,7 @@ The information provided by the creator of a service is marked with `//*` or `#*
 
 `info.yml`:
 
-```YML
+```YAML
 architecture: x86_64
 service_name: Attending teams can read this. #*
 type: web

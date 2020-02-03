@@ -88,7 +88,17 @@ def get_scores():
 @dashboard.route('/services')
 @find_team
 def get_services(team=None, ateam=None):
-    return redis_client.get('ctf_services')
+    svc = json.loads(redis_client.get('ctf_services2'))
+
+    filter_flag_ids = {} # port (int) -> flag_ids (list)
+
+    for port_str, obj in svc.items():
+        filter_flag_ids[port_str] = [x for x in obj['flag_id']['flag_ids'] if int(x['team_id']) != int(ateam.subnet)]
+
+    for k, v in svc.items():
+        v['flag_id']['flag_ids'] = filter_flag_ids[port_str]
+
+    return jsonify(svc)
 
 
 @dashboard.route('/jeopardies')

@@ -1,94 +1,116 @@
 <!DOCTYPE html>
 <html ng-app='ctfApp'>
-    <head>
-        <meta charset='utf-8'>
-        <meta content='width=device-width, initial-scale=1' name='viewport'>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1' name='viewport'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css">
-        <base href='/'>
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.css">
+    <base href='/'>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
 
-        <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.min.js'></script>
-        <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-route.min.js'></script>
-        <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-route.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular-sanitize.min.js'></script>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.js"></script>
-        <script src={{ url_for('static', filename='js/app.js') }}></script>
-        <script src={{ url_for('static', filename='js/controllers.js') }}></script>
-    </head>
-    <body>
-        <div class='container-fluid'>
-            <div class='row-fluid'>
-                <div class='btn-group'>
-                    <li class='btn'>
-                        <a href='#welcome'>
-                            <h3>
-                                Home
-                            </h3>
-                        </a>
-                    </li>
-                    <li class='btn'>
-                        <a href='#services'>
-                            <h3>
-                                Show Services
-                            </h3>
-                        </a>
-                    </li>
-                    <li class='btn'>
-                        <a href='#jeopardies'>
-                            <h3>
-                                Show Jeopardies
-                            </h3>
-                        </a>
-                    </li>
-                    <li class='btn'>
-                        <a href='#submit_flag'>
-                            <h3>
-                                Submit Flag
-                            </h3>
-                        </a>
-                    </li>
-                    <li class='btn'>
-                        <a href='#scoreboard'>
-                            <h3>
-                                View Scoreboard
-                            </h3>
-                        </a>
-                    </li>
-                    <li class='btn'>
-                            <a href='#liveshow'>
-                                <h3>
-                                    Liveshow
-                                </h3>
-                            </a>
-                        </li>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flipclock/0.7.8/flipclock.js"></script>
+    <script src={{ url_for('static', filename='js/app.js') }}></script>
+    <script src={{ url_for('static', filename='js/controllers.js') }}></script>
+</head>
+<body>
+<div class='container-fluid'>
+    <div class='row-fluid'>
+        <div class='btn-group'>
+            <li class='btn'>
+                <a href='#welcome'>
+                    <h3>
+                        Home
+                    </h3>
+                </a>
+            </li>
+            <li class='btn'>
+                <a href='#services'>
+                    <h3>
+                        Services
+                    </h3>
+                </a>
+            </li>
+            <li class='btn'>
+                <a href='#jeopardies'>
+                    <h3>
+                        Jeopardy
+                    </h3>
+                </a>
+            </li>
+            <li class='btn'>
+                <a href='#submit_flag'>
+                    <h3>
+                        Submit Flag
+                    </h3>
+                </a>
+            </li>
+            <li class='btn'>
+                <a href='#scoreboard'>
+                    <h3>
+                        Scoreboard
+                    </h3>
+                </a>
+            </li>
+            <li class='btn'>
+                <a href='#liveshow'>
+                    <h3>
+                        Liveshow
+                    </h3>
+                </a>
+            </li>
 
 
-                </div>
-            </div>
-            <div align="center">
-                <h3>Current round will end in</h3>
-            </div>
-            <div class="clock" style="margin: 0 auto;max-width: 300px;margin-top: 2em;"></div>
-            <script type="text/javascript">
-                $.getJSON("/tick_change_time", function(time_left){
-                    var clock = $('.clock').FlipClock(time_left, {
-                        countdown: true,
-                        clockFace: 'MinuteCounter'
-                    });
-                    if (time_left != 0) {
-                        setTimeout(function() {location.reload(false)}, (time_left * 1000));
+        </div>
+    </div>
+    <div align="center">
+        <h3>Current round will end in</h3>
+    </div>
+    <div class="clock" style="margin: 0 auto;max-width: 300px;margin-top: 2em;"></div>
+    <script type="text/javascript">
+        updateTimer();
+        var timerInterval;
+        timerInterval = setInterval(updateTimer, 20000);
+
+        function updateTimer() {
+            $.getJSON("/tick_change_time", function (time_left) {
+                var clock = $('.clock').FlipClock(time_left, {
+                    countdown: true,
+                    clockFace: 'MinuteCounter',
+                    autoStart: false,
+                    callbacks: {
+                        /*
+                        interval: function () {
+                            var time = clock.getTime().time;
+                            if (time === 0) {
+                                setTimeout(function () {
+                                    updateTimer();
+                                }, 5);
+                            }
+                        }*/
                     }
                 });
-            </script>
-            <div class='row-fluid'>
-                <div class='span12'>
-                    <div class='ng-view'></div>
-                </div>
-            </div>
+                clock.start();
+            });
+
+        }
+
+    </script>
+    <div class='row-fluid'>
+        <div class='span12'>
+            <div class='ng-view'></div>
         </div>
-    </body>
+    </div>
+</div>
+</body>
 </html>
