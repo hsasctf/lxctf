@@ -2,25 +2,12 @@
 
 
 
-- name: create jeop_keys directory
-  file:
-    path: "{{ role_path }}/files/jeop_keys"
-    state: directory
-  delegate_to: 127.0.0.1
 
 
-- name: Create jeop SSH keys
-  command: "ssh-keygen -t rsa -b 2048 -C 'SSH Key for jeop{{ hostvars[item]['jeop_num'] }}' -f '{{ role_path }}/files/jeop_keys/{{ item }}' -P '' -q"
-  args:
-    creates: "{{ role_path }}/files/jeop_keys/{{ item }}"
-  with_items:
-    - "{{groups['jeop_containers']}}"
-  delegate_to: 127.0.0.1
 
-
-- name: Check if jeop LXD networks already exists
+- name: Check if tpl LXD networks already exists
   uri:
-    url: "https://127.0.0.1:8443/1.0/networks/jeopbr{{ hostvars[item]['jeop_num'] }}"
+    url: "https://127.0.0.1:8443/1.0/networks/tplbr{{ hostvars[item]['tpl_num'] }}"
     method: GET
     status_code: 404,200
     headers:
@@ -30,7 +17,7 @@
     client_key: "{{ role_path }}/files/lxd.key"
   register: lxd_network_check_j
   with_items:
-    - "{{groups['jeop_containers']}}"
+    - "{{groups['tpl_containers']}}"
 
 - debug:
     msg: "{{ lxd_network_check_j }}"
@@ -39,18 +26,18 @@
 
 # SYNC operation success: status_code=200, follow redirects
 # Network post returns 201 when network newly created, 400 when already exists
-- name: Create jeop lxd networks 
+- name: Create tpl lxd networks
   when: item.0.status == 404
   uri:
     url: "https://127.0.0.1:8443/1.0/networks"
     method: POST
     status_code: 201
     body:
-      name: "jeopbr{{ hostvars[item.1]['jeop_num'] }}"
-      description: "Network of CTF Jeopardy {{ hostvars[item.1]['jeop_num'] }}"
+      name: "tplbr{{ hostvars[item.1]['tpl_num'] }}"
+      description: "Network of CTF tpl {{ hostvars[item.1]['tpl_num'] }}"
       config:
         ipv6.address: "none"
-        ipv4.address: "10.39.{{ hostvars[item.1]['jeop_num'] }}.254/24"
+        ipv4.address: "10.30.{{ hostvars[item.1]['tpl_num'] }}.254/24"
         ipv4.nat: "{{ lxd_auto_nat }}"
         ipv4.firewall: "{{ lxd_auto_firewall }}"
     body_format: json
@@ -63,7 +50,7 @@
   register: result_nw_create_j
   with_together:
     - "{{ lxd_network_check_j.results }}"
-    - "{{groups['jeop_containers']}}"
+    - "{{groups['tpl_containers']}}"
 
 - debug:
     msg: "{{ result_nw_create_j.results }}"
@@ -72,18 +59,18 @@
 
 # FIXME check for existing containers before creatiion
 
-- name: Creating LXD Containers (Jeopardy)
+- name: Creating LXD Containers (tpl)
   uri:
     url: "https://127.0.0.1:8443/1.0/containers"
     method: POST
     status_code: 202
     body:
-      name: jeop{{ hostvars[item]['jeop_num'] }}
+      name: tpl{{ hostvars[item]['tpl_num'] }}
       devices:
         default:
           name: eth0
           nictype: bridged
-          parent: "jeopbr{{ hostvars[item]['jeop_num'] }}"
+          parent: "tplbr{{ hostvars[item]['tpl_num'] }}"
           type: nic
       source:
         type: image
@@ -105,22 +92,21 @@
               subnets:
                 - type: static
                   ipv4: true
-                  address: 10.39.{{ hostvars[item]['jeop_num'] }}.1
+                  address: 10.30.{{ hostvars[item]['tpl_num'] }}.1
                   netmask: 255.255.255.0
-                  gateway: 10.39.{{ hostvars[item]['jeop_num'] }}.254
+                  gateway: 10.30.{{ hostvars[item]['tpl_num'] }}.254
                   control: auto
             - type: nameserver
-              address: 10.39.{{ hostvars[item]['jeop_num'] }}.254
+              address: 10.30.{{ hostvars[item]['tpl_num'] }}.254
         user.user-data: |
           #cloud-config
           # Apply updates using apt
           package_upgrade: false
           # Set hostname
-          hostname: jeop{{ hostvars[item]['jeop_num'] }}
-          fqdn: jeop{{ hostvars[item]['jeop_num'] }}.ctf.hs-albsig.de
+          hostname: tpl{{ hostvars[item]['tpl_num'] }}
+          fqdn: tpl{{ hostvars[item]['tpl_num'] }}.ctf.hs-albsig.de
           manage_etc_hosts: true
           ssh_authorized_keys:
-            - {{ lookup('file', role_path+'/files/jeop_keys/'+item+'.pub')  }}
             - {{ lookup('file', playbook_dir+'/sshkey/id_rsa_ctf.pub') }}
     body_format: json
     return_content: True
@@ -132,11 +118,11 @@
     client_key: "{{ role_path }}/files/lxd.key"
   register: result_create_containers_j
   with_items:
-    - "{{groups['jeop_containers']}}"
+    - "{{groups['tpl_containers']}}"
 - debug:
     msg: "{{ result_create_containers_j.results }}"
 # Wait for Async to finish status_code=200
-- name: Wait Async, Creating LXD Containers (Jeopardy)
+- name: Wait Async, Creating LXD Containers (tpl)
   uri:
     url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
     method: GET
@@ -157,7 +143,7 @@
 
 
 # ASYNC operation success: status_code=202 (Accepted), do not follow redirects
-- name: Start the Jeopardy containers 
+- name: Start the tpl containers
   uri:
     url: "https://127.0.0.1:8443/1.0/containers/{{ item }}/state"
     method: PUT
@@ -174,12 +160,12 @@
     client_key: "{{ role_path }}/files/lxd.key"
   register: lxd_cotainer_state_start_j
   with_items:
-    - "{{groups['jeop_containers']}}"
+    - "{{groups['tpl_containers']}}"
 - name:
   debug:
     msg: "{{ lxd_cotainer_state_start_j.results }}"
 # Wait for Async to finish status_code=200
-- name: Wait Async, Start the AD containers
+- name: Wait Async, Start the tpl container
   uri:
     url: "https://127.0.0.1:8443{{ item.json.operation }}/wait"
     method: GET
@@ -191,3 +177,11 @@
     client_cert: "{{ role_path }}/files/lxd.cert"
     client_key: "{{ role_path }}/files/lxd.key"
   with_items: "{{ lxd_cotainer_state_start_j.results }}"
+
+- name: publish ad image in lxd
+  command: /usr/bin/lxc publish tpl1 --alias tpl_ad_image --force
+  become: yes
+
+#- name: publish jeopary image in lxd
+#  command: /usr/bin/lxc publish tpl2 --alias tpl_jeop_image --force
+#  become: yes

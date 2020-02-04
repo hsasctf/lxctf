@@ -131,6 +131,25 @@ class CtfInventory(object):
                         "ansible_ssh_user": "ubuntu",
                         "jeop_num": 1
                     },
+                    "tpl1": {
+                        "ansible_connection": "ssh",
+                        "ansible_host": "10.30.1.1",
+                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/{}/private_key -W %h:%p -q vagrant@172.16.17.10\"".format(CTFDEV_CONFIG['provider']),
+                        "ansible_ssh_private_key_file": 'sshkey/id_rsa_ctf' if not IS_DEV else "/vagrant/sshkey/id_rsa_ctf",
+                        "ansible_ssh_user": "ubuntu",
+                        "team_num": 1,
+                        "tpl_num": 1,
+                        "team_secret": generate_team_secret(GLOBAL_CONFIG['secret'], 1)
+                    },
+                    "tpl2": {
+                        "ansible_connection": "ssh",
+                        "ansible_host": "10.30.2.1",
+                        "ansible_ssh_common_args": "-o StrictHostKeyChecking=no" if not IS_DEV else "-o ProxyCommand=\"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /vagrant/.vagrant/machines/ctfserver/{}/private_key -W %h:%p -q vagrant@172.16.17.10\"".format(
+                            CTFDEV_CONFIG['provider']),
+                        "ansible_ssh_private_key_file": 'sshkey/id_rsa_ctf' if not IS_DEV else "/vagrant/sshkey/id_rsa_ctf",
+                        "ansible_ssh_user": "ubuntu",
+                        "tpl_num": 2,
+                    },
                     # include n teams in dict
                     **{
                         "team{}".format(i): {
@@ -165,6 +184,7 @@ class CtfInventory(object):
                     "ctfserver",
                     "game_containers",
                     "jeop_containers",
+                    "tpl_containers",
                     "ungrouped"
                 ]
             },
@@ -181,6 +201,12 @@ class CtfInventory(object):
             "jeop_containers": {
                 "hosts": [
                     "jeop1"
+                ]
+            },
+            "tpl_containers": {
+                "hosts": [
+                    "tpl1",
+                    "tpl2"
                 ]
             },
             "ungrouped": {

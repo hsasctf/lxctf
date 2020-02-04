@@ -20,13 +20,13 @@
     become: yes
 
 
-- hosts: ad_containers
-  gather_facts: False
-
-  tasks:
-  - name: install pip and python 2
-    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
-    become: true
+#- hosts: ad_containers
+#  gather_facts: False
+#
+#  tasks:
+#  - name: install pip and python 2
+#    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+#    become: true
 
 
 #- hosts: jeop1
@@ -34,7 +34,7 @@
 #    - status_build_2019
 
 
-- hosts: ad_containers
+- hosts: tpl1
   roles:
      - { role: geerlingguy.pip, become: yes }
      - ad_service_2019_common

@@ -2,6 +2,7 @@
 
 - include: lxd_base.yml
 - include: zfs_storage.yml
+- include: template_infrastructure.yml
 - include: ad_infrastructure.yml
 - include: jeopardy_infrastructure.yml
 - include: gameserver_infrastructure.yml

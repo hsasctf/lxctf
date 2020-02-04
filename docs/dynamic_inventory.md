@@ -1,7 +1,13 @@
 # Dynamic inventory
 
 The dynamic Ansible inventory is located in `inventories/ctf.py`. It automatically generates keys and password and saves them in `inventories/ctf_config.yml`.
-This ensures that they are unique for every new game. Also a secret string is dynamically derived from the variable `secret` for every team.
+This ensures that they are unique for every new game.
+
+# Secure service installation
+
+**The following feature can only be used if you apply Ansible roles directly to team VMs, instead of using the template image container.**
+
+With dynamic inventory, a secret string is dynamically derived from the variable `secret` for every team.
 Each team VM in the inventory has a dynamic variable `team_secret` which can be used to write secure Ansible scripts with unique keys and passwords for each team.
 In `filter_plugins/my_filters.py` one can find a custom Ansible Jinja2 filter that uses this `team_secret` and can be used in Ansible templates/tasks.
 

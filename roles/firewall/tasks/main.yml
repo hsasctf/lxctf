@@ -169,7 +169,23 @@
     jump: ACCEPT
   become: yes
 
+- name: forward from tpl1 VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "tplbr1"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  become: yes
 
+- name: forward from tpl2 VM to default interface (internet access)
+  iptables:
+    chain: FORWARD
+    in_interface: "tplbr2"
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    ctstate: NEW
+    jump: ACCEPT
+  become: yes
 
 ## Hardcoded teammembers (no necessarity to do otherwise --> each team could create own local subnets)
 # Teamcontainer
@@ -272,6 +288,8 @@
   with_items:
     - [40, 41, 42]
 
+
+
 # Gameserver(Scorebot) to team VMs
 - name: Gameserver(Scorebot) to team VMs (TCP)
   iptables:
@@ -363,6 +381,25 @@
     destination: "!10.0.0.0/8"
     jump: MASQUERADE
   become: yes
+
+- name: allow internet access for tpl_ad
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.30.1.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
+
+- name: allow internet access for tpl_jeop
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "10.30.2.0/24"
+    destination: "!10.0.0.0/8"
+    jump: MASQUERADE
+  become: yes
+
 
 - name: anonymize the connections to teamservices
   iptables:

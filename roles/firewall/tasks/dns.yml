@@ -33,3 +33,15 @@
   with_nested:
     - ['udp', 'tcp']
     - ['jeopbr1']
+
+- name: allow DNS for tpl
+  iptables:
+    chain: INPUT
+    protocol: "{{ item[0] }}"
+    destination_port: 53
+    in_interface: "{{ item[1] }}"
+    jump: ACCEPT
+  become: True
+  with_nested:
+    - ['udp', 'tcp']
+    - ['tplbr1', 'tplbr2']
