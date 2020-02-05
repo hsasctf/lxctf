@@ -10,5 +10,5 @@
 
 1. login to AD image container and install all services
 1. make sure the service listens to 0.0.0.0
-1. on host **delete** the team containers e.g. `lxc list -c n --format csv | grep team | xargs -i"{}" lxc delete {} --force`
+1. on host **delete** the team containers e.g. `lxc list -c n --format csv | egrep "^team" | xargs -i"{}" lxc delete {} --force`
 1. run ansible-playbook (`vagrant provision` for dev, for local installation see `local.md`)
