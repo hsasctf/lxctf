@@ -20,13 +20,13 @@
     become: yes
 
 
-#- hosts: ad_containers
-#  gather_facts: False
-#
-#  tasks:
-#  - name: install pip and python 2
-#    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
-#    become: true
+- hosts: tpl1
+  gather_facts: False
+
+  tasks:
+  - name: install pip and python 2
+    raw: test -e /usr/bin/pip2 || (apt -y update && apt install -y python-pip)
+    become: true
 
 
 #- hosts: jeop1
