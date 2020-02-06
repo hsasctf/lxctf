@@ -1,9 +1,8 @@
 [Interface]
 PrivateKey = {{ lookup('file', role_path+'/files/wireguard_tmp/privatekey-'+ item[0] +'-player-' + item[1]|string )}}
 Address = 10.42.{{ item[0]|replace('team','')|int }}.{{ item[1] }}/24
-DNS = 10.40.0.{{ item[0]|replace('team','')|int }}
 
 [Peer]
-PublicKey =  {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-server') }}
-AllowedIPs = 10.42.0.{{ item[0]|replace('team','')|int }}/32{% for item in groups['ad_containers'] %}, 10.40.{{ item[0]|replace('team','')|int }}.1/32{% endfor %}
+PublicKey =  {{ lookup('file', role_path+'/files/wireguard_tmp/publickey-'+ item[0] +'-server') }}
+AllowedIPs = 10.38.0.0/16, 10.39.0.0/16, 10.40.0.0/16, 10.41.0.0/16, 10.42.0.0/16
 Endpoint = {{ ansible_default_ipv4.address }}:42{{ '%03d'|format(item[0]|replace('team','')|int) }}

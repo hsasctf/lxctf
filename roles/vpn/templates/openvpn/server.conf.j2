@@ -11,6 +11,7 @@ dh dh2048.pem # Diffie-Hellman parameters
 server 10.41.{{ item|replace('team','')|int }}.0 255.255.255.0 # team's vpn network
 #ifconfig-pool-persist ipp.txt
 
+push "route 10.42.0.0 255.255.0.0" # wireguard vpns
 push "route 10.40.0.0 255.255.0.0" # team vms
 push "route 10.39.0.0 255.255.0.0" # jeop vms
 push "route 10.38.0.0 255.255.0.0" # gameserver vms
