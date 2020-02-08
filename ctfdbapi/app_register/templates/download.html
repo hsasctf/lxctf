@@ -28,7 +28,9 @@
                 <a href="/download_file/wg{{ i }}/">Wireguard Client {{ i }}</a> <br>
             {% endfor %}
 
-            <p>TODO: provide instructions</p>
+            <p>Copy file to /etc/wireguard</p>
+            <p>chmod 600 /etc/wireguard/wgX.conf</p>
+            <p>sudo wg-quick up filename # without .conf</p>
 
             <h3>OpenVPN</h3>
             Our OpenVPN server is configured to allow this key to be used multiple times:
