@@ -112,6 +112,72 @@ def get_latest_flag_ids():
     to_return = {'flag_ids': flag_ids}
     return jsonify(to_return)
 
+@fakeapi.route("/getlatestflagids_multi")
+def get_latest_flag_ids_multi():
+    if request.args.get('secret') != API_SECRET:
+        abort(401)
+
+    flag_ids = {}
+
+    event = Event.query.order_by(Event.id.desc()).first()
+
+    ateams = AttendingTeam.query.filter_by(event=event)
+
+    for ateam in ateams:
+        services = AttendingTeam.query.filter_by(event=event)
+
+        flag_ids[int(ateam.subnet)] = {}
+        for service in Challenge.query.filter_by(type="ad", event=event):
+            maybe_three_flags = Flag.query.filter_by(attending_team=ateam, challenge=service).order_by(Flag.created.desc()).order_by(Flag.created.desc()).limit(3).all()
+            flag_ids[int(ateam.subnet)][int(service.port)] = [f.flag_id for f in maybe_three_flags]
+
+
+    to_return = {'flag_ids': flag_ids}
+    return jsonify(to_return)
+
+
+def pretty_date(time=False):
+    """
+    Get a datetime object or a int() Epoch timestamp and return a
+    pretty string like 'an hour ago', 'Yesterday', '3 months ago',
+    'just now', etc
+    """
+    from datetime import datetime
+    now = datetime.now()
+    if type(time) is int:
+        diff = now - datetime.fromtimestamp(time)
+    elif isinstance(time,datetime):
+        diff = now - time
+    elif not time:
+        diff = now - now
+    second_diff = diff.seconds
+    day_diff = diff.days
+
+    if day_diff < 0:
+        return ''
+
+    if day_diff == 0:
+        if second_diff < 10:
+            return "just now"
+        if second_diff < 60:
+            return str(second_diff) + " seconds ago"
+        if second_diff < 120:
+            return "a minute ago"
+        if second_diff < 3600:
+            return str(int(second_diff / 60)) + " minutes ago"
+        if second_diff < 7200:
+            return "an hour ago"
+        if second_diff < 86400:
+            return str(int(second_diff / 3600)) + " hours ago"
+    if day_diff == 1:
+        return "Yesterday"
+    if day_diff < 7:
+        return str(day_diff) + " days ago"
+    if day_diff < 31:
+        return str(int(day_diff / 7)) + " weeks ago"
+    if day_diff < 365:
+        return str(int(day_diff / 30)) + " months ago"
+    return str(day_diff / 365) + " years ago"
 
 @fakeapi.route("/reasons")
 def get_reasons():
@@ -122,12 +188,11 @@ def get_reasons():
     particiant_ids = [x.id for x in event.participants]
 
 
-    result = [{"reason": "test"}]
+    result = []
 
-    for team_score in TeamScore.query.filter(TeamScore.attending_team.has(AttendingTeam.id.in_(particiant_ids))):
-        result.append({"reason": str(team_score.reason)})
-        #print(str(result))
-        break
+    for team_score in TeamScore.query.filter(TeamScore.attending_team.has(AttendingTeam.id.in_(particiant_ids))).order_by(TeamScore.id.desc()).limit(20).all():
+        result.append({"reason": str(team_score.reason), "created": pretty_date(team_score.created)})
+
 
 
     return jsonify(result)
