@@ -1,0 +1,6 @@
+(load "quicklisp.lisp")
+(quicklisp-quickstart:install :path "/home/eliza-chatbot/quicklisp")
+(ql:system-apropos "vecto")
+(ql:quickload "vecto")
+(ql:quickload "hunchentoot")
+(quit)

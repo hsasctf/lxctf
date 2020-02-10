@@ -1,0 +1,5 @@
+---
+# vars file for pwstore_api
+
+service_name: "pwstore_api"
+supervisor: no

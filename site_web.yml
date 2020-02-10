@@ -1,0 +1,4 @@
+---
+
+- name: include playbook gameserver
+  import_playbook: gameserver.yml

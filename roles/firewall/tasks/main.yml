@@ -75,6 +75,14 @@
     jump: ACCEPT
   become: True
 
+# Allow DNS
+- name: Allow DNS
+  iptables:
+    chain: INPUT
+    protocol: udp
+    jump: ACCEPT
+  become: True
+
 # SSH for maintainance
 - name: Host allow new ssh conections
   iptables:
@@ -381,11 +389,11 @@
   become: yes
 
 # Set the FORWARD policy to drop
-- name: Set the policy for the FORWARD chain to DROP
-  iptables:
-    chain: FORWARD
-    policy: ACCEPT
-  become: yes
+#- name: Set the policy for the FORWARD chain to DROP
+#  iptables:
+#    chain: FORWARD
+#    policy: ACCEPT
+#  become: yes
 
 
 

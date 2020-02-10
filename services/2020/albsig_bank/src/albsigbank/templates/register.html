@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/static/logo.png">
+
+    <title>Albsig Bank - Sign Up</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='register.css') }}">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row no-gutter">
+            <div class="d-none d-md-flex col-md-4 col-lg-6 bg-image"></div>
+            <div class="col-md-8 col-lg-6">
+                <div class="login d-flex align-items-center py-5">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-9 col-lg-8 mx-auto">
+                                <form method="POST" action="">
+                                    {{ form.hidden_tag() }}
+                                    <fieldset class="form-group">
+                                        <legend class="border-bottom mb-4">Join Today</legend>
+                                        <div class="form-group">
+                                            {{ form.username.label(class="form-control-label") }} {% if form.username.errors %} {{ form.username(class="form-control form-control-lg is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.username.errors %}
+                                                <span>{{ error }}</span> {% endfor %}
+                                            </div>
+                                            {% else %} {{ form.username(class="form-control form-control-lg") }} {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.email.label(class="form-control-label") }} {% if form.email.errors %} {{ form.email(class="form-control form-control-lg is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.email.errors %}
+                                                <span>{{ error }}</span> {% endfor %}
+                                            </div>
+                                            {% else %} {{ form.email(class="form-control form-control-lg") }} {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.password.label(class="form-control-label") }} {% if form.password.errors %} {{ form.password(class="form-control form-control-lg is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.password.errors %}
+                                                <span>{{ error }}</span> {% endfor %}
+                                            </div>
+                                            {% else %} {{ form.password(class="form-control form-control-lg") }} {% endif %}
+                                        </div>
+                                        <div class="form-group">
+                                            {{ form.confirm_password.label(class="form-control-label") }} {% if form.confirm_password.errors %} {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.confirm_password.errors %}
+                                                <span>{{ error }}</span> {% endfor %}
+                                            </div>
+                                            {% else %} {{ form.confirm_password(class="form-control form-control-lg") }} {% endif %}
+                                        </div>
+                                    </fieldset>
+                                    <div class="form-group">
+                                        {{ form.submit(class="btn btn-outline-info") }}
+                                    </div>
+                                    <small class="text-muted ml-2">
+                    <a href="{{ url_for('login') }}">Already have an account?</a>
+                    </small>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap core JavaScript -->
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.slim.js') }}"></script>
+</body>
+
+</html>

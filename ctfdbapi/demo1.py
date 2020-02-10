@@ -15,7 +15,7 @@ from manage_add_services import combine_service_infos, create_all_services_and_s
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger(__name__)
 
-fileHandler = logging.FileHandler("{0}/{1}.log".format("/var/log/ctf", "demo"))
+fileHandler = logging.FileHandler("{0}/{1}.log".format("/var/log", "demo"))
 fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        logger.info("CTF DEMO started, ctrl-c to at any point, logs are written to /var/log/ctf/")
+        logger.info("CTF DEMO started, ctrl-c to at any point, logs are written to /var/log/")
         logger.info("Stop tmux sessions and delete previous demos?")
         input()
         stop_tmux_sessions()

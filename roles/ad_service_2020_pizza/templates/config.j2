@@ -1,0 +1,13 @@
+[program:pizzaservice]
+directory=/home/pizza/
+command=/home/pizza/pizzaservice 5101 /home/pizza/order.db /home/pizza/rsa_keys/pub_key.pem /home/pizza/rsa_keys/priv_key.pem
+autostart=true
+autorestart=true
+startretries=20
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/{{ service_name }}-err.log
+stdout_logfile=/var/log/{{ service_name }}-out.log
+user={{ service_name }}
+killasgroup=true
+stopasgroup=true

@@ -1,0 +1,9 @@
+architecture: x86_64
+service_name: logserver
+type: web
+description: Http server written in steel bank common lisp
+flag_id_description: Flags are identified by a session id
+apt_dependencies:
+    - sbcl
+pip_dependencies:
+    - flask

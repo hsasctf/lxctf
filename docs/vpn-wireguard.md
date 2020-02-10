@@ -1,32 +1,13 @@
-
-# Table of Contents
-
-1.  [Wireguard](#org843b4b0)
-    1.  [Varaibles used in this readme](#org6c7ba28)
-    2.  [Installation and Packages](#org21fd0fc)
-    3.  [Firewall rules](#org90e0eee)
-    4.  [Directories created](#org31859cc)
-    5.  [Key creation](#org1f1a100)
-    6.  [Building the interface configs](#org8b799f2)
-    7.  [Securing the private keys and starting the Server-interfaces](#org1dd0229)
-
-
-<a id="org843b4b0"></a>
-
 # Wireguard
 
 Wireguard is a simple and lightweight vpn.
 
-
-<a id="org6c7ba28"></a>
 
 ## Varaibles used in this readme
 
 -   &lt;team-id&gt;, the id of the team taking part in the ctf
 -   &lt;player-num&gt;, the number of players starting from one and counting to five. Unfourtunatly this is hardcoded.
 
-
-<a id="org21fd0fc"></a>
 
 ## Installation and Packages
 
@@ -37,8 +18,6 @@ The associated ansible script installes the following packages on the host:
 -   wireguard-dkms, the wireguard kernel module
 
 
-<a id="org90e0eee"></a>
-
 ## Firewall rules
 
 These ufw rules are created when the asible script is executed:
@@ -48,8 +27,6 @@ These ufw rules are created when the asible script is executed:
 
 Where the rule with &lt;team-id&gt; is added for each team and the ids are prefaced with zeros, so that the whole portnumber is five digits long.
 
-
-<a id="org31859cc"></a>
 
 ## Directories created
 
@@ -65,16 +42,12 @@ The following directories are created on the host in the context of the ansible 
 Teamfolders are created for each team.
 
 
-<a id="org1f1a100"></a>
-
 ## Key creation
 
 A keypair is generated for teach player in the ctf (five per team), as well as five keys for team 254, the admin team and one keypair fore the server.
 
 These Keypairs are saved in /files/wireguard/tmp/privatekey-&lt;team-id&gt;-player-&lt;player-num&gt; and files/wireguard/tmp/publickey-&lt;team-id&gt;-player-&lt;player-num&gt; for each player. The Server keys are named /files/wireguard/tmp/private-server and /files/wireguard/tmp/publickey-server.
 
-
-<a id="org8b799f2"></a>
 
 ## Building the interface configs
 
@@ -86,10 +59,11 @@ Configs are created for each player are saved to \*files/client/configs/wg1-&lt;
 
 The serverconfigs are stored in /files/server/configs/wg&lt;team-id&gt;.conf
 
+For the admin configsyou need to change the DNS from 10.40.254.254 to 10.40.&lt;some-team-id&gt;.254 or a public DNS to enable DNS functionality.
+Also change allowed ips 10.40.254.254 to your DNS, eg 10.40.1.254. 
 
-<a id="org1dd0229"></a>
 
-## Securing the private keys and starting the Server-interfaces
+## Securing the private keys and starting the server-interfaces
 
 The privatekeys for the clients are made unaccessible via chmod and chown.
 
@@ -98,5 +72,26 @@ The privatekeys for the clients are made unaccessible via chmod and chown.
 
 A last the interfaces on the host are set up for all teams.
 
-    sudo wg-quick up wg<team-id>
+    sudo wg-quick up wg&lt;team-id&gt;
 
+
+## Problems while buliding the ansible infrastructure a second time
+
+The wireguard interfaces are not disabled, so at rebuilding an error occours, that mentions this.
+Just execute scripts/04_wireguard_interface_down.sh
+
+
+## Post using problems
+
+Should you not stop the interface correctly after a session or should something crash your ip-configuration might be broken.
+To fix these issues, first disable the interface via
+
+    sudo wg-quick down wg&lt;team-id&gt;
+
+Then delete your ip configuration on the interface, eg. eth0 that shows you an ip like 10.40.1.1/24 with the following command:
+
+    sudo ip addr del 10.40.1.1/24 dev eth0
+
+After that, if you need to start your dhcp client again to get a new ip on you interface.
+
+    sudo dhclient eth0

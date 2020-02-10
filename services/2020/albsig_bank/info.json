@@ -1,0 +1,11 @@
+{
+    "name" : "Albsig Bank",
+    "authors" : ["Dominik"],
+    "points": 100, 
+    "flag_id_description": "Admin Notes",
+    "service_description": "Banking Website",
+    "port" : 5103,
+    "getflag" : "scripts/getflag.py",
+    "setflag" : "scripts/setflag.py",
+    "is_working" : 1
+  }

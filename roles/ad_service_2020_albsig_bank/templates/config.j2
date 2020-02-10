@@ -1,0 +1,13 @@
+[program:{{ service_name }}]
+directory=/home/albsig_bank/
+command=python3.7 /home/albsig_bank/run.py
+autostart=true
+autorestart=true
+startretries=20
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/albsig_bank-err.log
+stdout_logfile=/var/log/albsig_bank-out.log
+user=albsig_bank
+killasgroup=true
+stopasgroup=true

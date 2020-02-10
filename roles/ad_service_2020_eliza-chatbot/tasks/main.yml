@@ -1,0 +1,40 @@
+---
+# tasks file for ad_service_2020_chat
+
+
+- name: run pre tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: pre_tasks
+
+
+- name: make prepare.sh executable
+  file:
+    path: "/home/{{ service_name }}/install/prepare.sh"
+    mode: '0777'
+  become: yes
+
+ 
+- name: run prepare.sh
+  shell: ./prepare.sh
+  args:
+    chdir: /home/{{ service_name }}/install/
+  become: yes
+
+
+- name: make everything executable
+  file:
+    path: "/home/{{ service_name }}/install/eliza-chatbot.lisp"
+    mode: '0777'
+  become: yes
+
+
+#- name: run init script
+#  become: yes
+#  shell: 'sudo -H -u {{ service_name }} -- sh -c "cd /home/{{ service_name }}/install/ && nohup ./eliza-chatbot.lisp &"'
+
+
+- name: run post tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: post_tasks

@@ -1,0 +1,13 @@
+[program:{{ service_name }}]
+directory=/home/{{ service_name }}
+command="nohup /home/{{ service_name }}/install/eliza-chatbot.lisp &"
+autostart=true
+autorestart=true
+startretries=20
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/{{ service_name }}-err.log
+stdout_logfile=/var/log/{{ service_name }}-out.log
+user={{ service_name }}
+killasgroup=true
+stopasgroup=true

@@ -1,0 +1,144 @@
+---
+# tasks file for ad_service_2020_pizza
+
+
+- name: run pre tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: pre_tasks
+
+
+- name: create build dir for pizzaservice
+  become: yes
+  file:
+    path: "/home/{{ service_name }}/build"
+    state: directory
+    owner: "{{ service_name }}"
+    group: "{{ service_name }}"
+    #creates: "/home/{{ service_name }}/build"
+
+
+- name: create dir for rsa_keys for pizzaservice   
+  become: yes
+  file:
+    path: "/home/{{ service_name }}/rsa_keys"
+    state: directory
+    owner: "{{ service_name }}"
+    group: "{{ service_name }}"
+    #creates: "/home/{{ service_name }}/rsa_keys"
+
+
+- name: initialize db for pizzaservice
+  become: yes
+  shell: "sqlite3 order.db < dbinit.sql"
+  args:
+    chdir: "/home/{{ service_name }}/"
+    creates: "order.db"
+
+
+- name: create rsa pubkey for pizzaservice
+  become: yes
+  command:
+    chdir: "/home/{{ service_name }}/rsa_keys"
+    cmd: "openssl genrsa -out priv_key.pem"
+    #creates: "/home/{{ service_name }}/rsa_keys/priv_key.pem"
+
+
+- name: create rsa priv key for pizzaservice 
+  become: yes
+  command:
+    chdir: "/home/{{ service_name }}/rsa_keys"
+    cmd: "openssl rsa -pubout -in priv_key.pem -outform PEM -out pub_key.pem"
+    #creates: "/home/{{ service_name }}/rsa_keys/pub_key.pem"
+  
+
+- name: pizzaservice cmake
+  become: yes
+  command: 
+    chdir: "/home/{{ service_name }}/build/"
+    cmd: "cmake .."
+    #iargv: 
+    #  - "cmake"
+    #  - ".."  
+
+
+- name: compile pizzaservice  
+  become: yes
+  command: 
+    chdir: "/home/{{ service_name }}/build/"
+    cmd: "make -j 4"
+    #argv:
+    #  - make
+    #  - j
+    #  - 4
+
+# TODO make port dynamic
+#- name: start service
+#  become: yes
+#  shell: 'sudo -H -u {{ service_name }} -- sh -c "cd /home/{{ service_name }}/ && nohup ./pizzaservice 5101 order.db rsa_keys/pub_key.pem rsa_keys/priv_key.pem > /var/log/{{ service_name }}/nohup.log &"'
+    #- stat: path=/home/pizza/pizzaservice
+    #register: server_result
+    #become: yes
+
+
+  #- name: force recompilation
+  #file:
+  # path: "/home/{{ service_name }}/{{ item }}"
+  # state: absent
+  #loop:
+  #  - rsa_keys
+  #  - build
+
+  #become: yes
+  #when: server_result.stat.exists == False
+
+
+  #- name: create directory for rsa keys
+  #file:
+  #  path: "/home/{{ service_name }}/rsa_keys"
+  #  state: directory
+  #  owner: "{{ service_name }}"
+  #  group: "{{ service_name }}"
+  #become: yes
+
+  #- name: create directory for build
+  #file:
+  #  path: "/home/{{ service_name }}/build"
+  #  state: directory
+  #  owner: "{{ service_name }}"
+  #  group: "{{ service_name }}"
+  #become: yes
+
+#- name: create keypair
+#  shell: openssl genrsa -out rsa_keys/priv_key.pem 1>/dev/null 2>/dev/null && openssl rsa -pubout -in rsa_keys/priv_key.pem -outform PEM -out rsa_keys/pub_key.pem 1>/dev/null 2>/dev/null
+#
+#  args:
+#    creates: /home/{{ service_name }}/rsa_keys/pub_key.pem
+#    chdir: /home/{{ service_name }}/
+#  become: yes
+
+
+    #- name: make init script executable
+    #file:
+    #path: "/home/{{ service_name }}/init.sh"
+    #mode: 0700
+    #become: yes
+
+
+  #- name: run init script
+  #shell: 'sudo -H -u {{ service_name }} -- sh -c "cd /home/{{ service_name }}/ && ./init.sh --new"'
+  #shell:
+  #  chdir: '/home/{{ service_name }}'
+  #  cmd: './init.sh --new'
+  #become_user: '{{ service_name }}'
+  #become: yes
+  #become_user: '{{ service_name }}'
+  #command: 
+  #  cmd: './init.sh --new'
+  #  chdir: '/home/{{ service_name }}/'
+
+
+- name: run post tasks for service
+  include_role:
+    name: ad_service_2020_common
+    tasks_from: post_tasks

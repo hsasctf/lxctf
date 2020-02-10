@@ -1,0 +1,6 @@
+- hosts: ad_containers
+  roles:
+     - ad_service_2020_pizza
+     - ad_service_2020_pwstore_api
+     - ad_service_2020_eliza-chatbot
+     - ad_service_2020_albsig_bank  

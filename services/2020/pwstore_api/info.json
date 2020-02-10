@@ -1,0 +1,11 @@
+{
+    "name" : "pwstore_api",
+    "authors" : ["Leo"],
+    "points": 100, 
+    "flag_id_description": "username used to register an account",
+    "service_description": "store your important passwords",
+    "port" : 5102,
+    "getflag" : "scripts/getflag.py",
+    "setflag" : "scripts/setflag.py",
+    "is_working" : 1
+  }

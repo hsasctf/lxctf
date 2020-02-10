@@ -1,0 +1,10 @@
+architecture: x86_64
+service_name: pwstore_api
+type: web
+description: store your important passwords
+flag_id_description: username used to register an account
+apt_dependencies:
+    - python3.7
+    - python3-pip
+pip_dependencies:
+    - aiohttp

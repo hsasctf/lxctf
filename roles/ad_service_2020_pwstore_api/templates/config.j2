@@ -1,0 +1,13 @@
+[program:{{ service_name }}]
+directory=/home/{{ service_name }}
+command=python3.7 /home/{{ service_name }}/pwstore.py 5103
+autostart=true
+autorestart=true
+startretries=20
+startsecs=1
+redirect_stderr=true
+stderr_logfile=/var/log/{{ service_name }}-err.log
+stdout_logfile=/var/log/{{ service_name }}-out.log
+user={{ service_name }}
+killasgroup=true
+stopasgroup=true

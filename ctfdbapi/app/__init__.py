@@ -14,7 +14,7 @@ pymysql.install_as_MySQLdb()
 logging.basicConfig(level=logging.DEBUG)
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 
-fileHandler = logging.FileHandler("{0}/{1}.log".format("/var/log/ctf", "dbapi"))
+fileHandler = logging.FileHandler("{0}/{1}.log".format("/var/log", "dbapi"))
 fileHandler.setFormatter(logFormatter)
 
 app = Flask(__name__)

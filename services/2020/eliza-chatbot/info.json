@@ -1,0 +1,11 @@
+{
+  "name" : "eliza-chatbot",
+  "authors" : ["Anton"],
+  "points": 100,
+  "flag_id_description": "String in the conversation record",
+    "service_description": "A friendly chatbot that sould deal with your sorrow.",
+    "port" : 5104,
+    "getflag" : "scripts/getflag.py",
+    "setflag" : "scripts/setflag.py",
+    "is_working" : 1
+}

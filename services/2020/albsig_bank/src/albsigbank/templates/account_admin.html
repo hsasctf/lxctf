@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link rel="icon" href="/static/logo.png">
+
+    <title>Albsig Bank - Home</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='simple-sidebar.css') }}">
+
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="sidebar-heading">Bank Director Control Panel</div>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{ url_for('home') }}">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid">
+                <br>
+                <div class="alert alert-danger">
+                    <strong>Warning!</strong> You are logged in as the web admin. Please proceed with care .
+                </div>
+                <br>
+                <br>
+                <div class="jumbotron">
+                    <h3>Bank Director Features</h3>
+                    <br>
+                    <div class="row">
+                        <div class="col"><button type="button" class="btn btn-danger btn-lg btn-block" onclick="alert('Random employee successfully fired! Good job!');">Fire random employee</button></div>
+                        <div class="col"><button type="button" class="btn btn-danger btn-lg btn-block" onclick="alert('Wages have been successfully cut! You are a true boss!');">Cut wages</button></div>
+                        <div class="col"><button type="button" class="btn btn-danger btn-lg btn-block" onclick="alert('Coffee will be delivered soon by your secretary.');">Order coffee</button></div>
+                        <div class="col"><button type="button" class="btn btn-danger btn-lg btn-block" onclick="alert('You are rich!');">Sell stocks</button></div>
+                    </div>
+                </div>
+                <br>
+                <div class="jumbotron">
+                    <h3>Notes / Instructions</h3>
+		    <h5>Here you can add notes / instructions which can be viewed by all employees!</h5><br> {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %}
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                    {% endfor %} {% endif %} {% endwith %}
+                    <div class="card bg-primary text-white">
+                        <div class="card-body" name="admin_notes">{{ notes }}</div>
+                    </div>
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        <fieldset class="form-group">
+                            <br><br>
+                            <div class="form-group">
+                                {{ form.notes(class="form-control form-control-lg") }}
+                            </div>
+                        </fieldset>
+                        <div class="form-group">
+                            {{ form.add(class="btn btn-outline-info") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="{{ url_for('static', filename='bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+</body>
+
+</html>

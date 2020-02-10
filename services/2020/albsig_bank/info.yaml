@@ -1,0 +1,15 @@
+architecture: x86_64
+service_name: albsig_bank
+type: web
+description: Banking website for customers and employees
+flag_id_description: Admin Notes / Instructions
+apt_dependencies:
+    - python3
+    - python3-pip
+pip_dependencies:
+    - flask
+    - flask_wtf
+    - flask_bcrypt
+    - flask_sqlalchemy
+    - flask_login
+    - flask_basicauth
