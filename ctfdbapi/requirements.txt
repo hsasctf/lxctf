@@ -29,7 +29,7 @@ itsdangerous==0.24
 Jinja2==2.9.6
 Mako==1.0.6
 MarkupSafe==1.0
-paramiko==2.4.2
+paramiko==2.10.1
 passlib==1.7.1
 pexpect==4.2.1
 ptyprocess==0.5.1
